@@ -52,7 +52,8 @@ function potx_select_form() {
   // Generate translation file for a specific language if possible.
   $supported = locale_supported_languages();
   $names = $supported['name'];
-  if (count($names) > 1) {
+  if (count($names) > 1 || !isset($names['en'])) {
+    // We have more languages, or the single language we have is not English.
     $options = array('n/a' => t('Language independent template'));
     foreach ($names as $langcode => $name) {
       // Skip English, as we should not have translations for this language.
@@ -64,7 +65,7 @@ function potx_select_form() {
     $form['langcode'] = array(
       '#type' => 'radios',
       '#title' => t('Template language'),
-      '#default_value' => 'pot',
+      '#default_value' => 'n/a',
       '#options' => $options,
       '#description' => t('Export a language idependent or language dependent (plural forms, language team name, etc.) template.'),
     );
@@ -133,9 +134,12 @@ function potx_select_form_submit($form_id, &$form) {
   if (isset($form['langcode']) && ($form['langcode'] != 'n/a')) {
     $template_langcode = $form['langcode'];
     $outputname .= '.'. $template_langcode;
-    if (isset($form['translations'])) {
+    if (!empty($form['translations'])) {
       $translation_langcode = $template_langcode;
       $outputname .= '.po';
+    }
+    else {
+      $outputname .= '.pot';
     }
   }
   else {
