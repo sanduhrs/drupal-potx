@@ -76,23 +76,23 @@ END;
       $files = array(__FILE__);
       break;
     case '--auto' :
-      $files = _potx_explore_dir();
+      $files = _potx_explore_dir('', '*', POTX_API_5);
       break;
   }
 }
 
 // Fall back to --auto, if --files are not specified
 if (empty($files)) {
-  $files = _potx_explore_dir();
+  $files = _potx_explore_dir('', '*', POTX_API_5);
 }
 
 foreach ($files as $file) {
   _potx_status("Processing $file...\n");
-  _potx_process_file($file);
+  _potx_process_file($file, 0, '_potx_save_string', '_potx_save_version', POTX_API_5);
 }
 
-_potx_build_files(POTX_STRING_RUNTIME, $build_mode);
-_potx_build_files(POTX_STRING_INSTALLER, POTX_BUILD_SINGLE, 'installer');
+_potx_build_files(POTX_STRING_RUNTIME, $build_mode, 'general', '_potx_save_string', '_potx_save_version', '_potx_get_header', NULL, NULL, POTX_API_5);
+_potx_build_files(POTX_STRING_INSTALLER, POTX_BUILD_SINGLE, 'installer', '_potx_save_string', '_potx_save_version', '_potx_get_header', NULL, NULL, POTX_API_5);
 _potx_write_files();
 _potx_status("\nDone.\n");
 
