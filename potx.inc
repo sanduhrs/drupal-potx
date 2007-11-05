@@ -330,7 +330,7 @@ function _potx_translation_export($translation_export_langcode, $string, $plural
   if (!isset($plural)) {
     // Single string to look translation up for.
     if ($translation = db_result(db_query("SELECT t.translation FROM {locales_source} s LEFT JOIN {locales_target} t ON t.lid = s.lid WHERE s.source = '%s' AND t.{$language_column} = '%s'", $string, $translation_export_langcode))) {
-      return 'msgstr '. _locale_export_string($translation);
+      return 'msgstr '. _locale_export_print($translation);
     }
     return "msgstr \"\"\n";
   }
@@ -362,7 +362,7 @@ function _potx_translation_export($translation_export_langcode, $string, $plural
       // Source string array was done, so export translations.
       foreach ($strings as $index => $string) {
         if ($translation = db_query("SELECT t.translation FROM {locales_source} s LEFT JOIN {locales_target} t ON t.lid = s.lid WHERE s.source = '%s' AND t.{$language_column} = '%s'", $string, $translation_export_langcode)) {
-          $output .= 'msgstr['. $index .'] '. _locale_export_string(_locale_export_remove_plural($translation->translation));
+          $output .= 'msgstr['. $index .'] '. _locale_export_print(_locale_export_remove_plural($translation->translation));
         }
         else {
           $output .= "msgstr[". $index ." \"\"\n";
