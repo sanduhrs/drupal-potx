@@ -191,11 +191,19 @@ function _potx_process_file($file_path, $strip_prefix = 0, $save_callback = '_po
   if ($basename == 'locale.inc') {
     _potx_find_language_names($file_name, $save_callback, $api_version);
   }
-  if ($basename == 'locale.module') {
+  elseif ($basename == 'locale.module') {
     _potx_add_date_strings($file_name, $save_callback, $api_version);
   }
-  if ($basename == 'common.inc') {
+  elseif ($basename == 'common.inc') {
     _potx_add_format_interval_strings($file_name, $save_callback);
+  }
+  elseif ($basename == 'system.module') {
+    _potx_add_default_region_names($file_name, $save_callback, $api_version);
+  }
+  elseif ($basename == 'user.module') {
+    // Save default user role names.
+    $save_callback('anonymous user', $file_name);
+    $save_callback('authenticated user', $file_name);
   }
 }
 
@@ -954,6 +962,30 @@ function _potx_add_format_interval_strings($file, $save_callback) {
 }
 
 /**
+ * Add default theme region names, which cannot be extracted otherwise.
+ * These default names are defined in system.module
+ *
+ * @param $file
+ *   Name of the file parsed.
+ * @param $save_callback
+ *   Callback function used to save strings.
+ * @param $api_version
+ *   Drupal API version to work with.
+ */
+function _potx_add_default_region_names($file, $save_callback, $api_version = POTX_API_6) {
+  $regions = array(
+    'left' => 'Left sidebar',
+    'right' => 'Right sidebar',
+    'content' => 'Content',
+    'header' => 'Header',
+    'footer' => 'Footer',
+  );
+  foreach($regions as $region) {
+    $save_callback($region, $file);
+  }
+}
+
+/**
  * Parse an .info file and add relevant strings to the list.
  *
  * @param $file_path
@@ -978,6 +1010,13 @@ function _potx_find_info_file_strings($file_path, $file_name, $save_callback, $a
   foreach (array('name', 'description', 'package') as $key) {
     if (isset($info[$key])) {
       $save_callback($info[$key], $file_name);
+    }
+  }
+  
+  // Add regions names from themes
+  if (isset($info['regions']) && is_array($info['regions'])) {
+    foreach($info['regions'] as $region => $region_name) {
+      $save_callback($region_name, $file_name);
     }
   }
 }
