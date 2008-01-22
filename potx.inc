@@ -1154,10 +1154,14 @@ function _potx_save_string($value = NULL, $file = NULL, $line = 0, $string_mode 
   if (isset($value)) {
     switch ($string_mode) {
       case POTX_STRING_BOTH:
+        // Mark installer strings as duplicates of runtime strings if
+        // the string was both recorded in the runtime and in the installer.
         $_potx_install[$value][$file][] = $line .' (dup)';
         // Break intentionally missing.
       case POTX_STRING_RUNTIME:
-        $_potx_strings[$value][$file][] = $line;
+        // Mark runtime strings as duplicates of installer strings if
+        // the string was both recorded in the runtime and in the installer.
+        $_potx_strings[$value][$file][] = $line .($string_mode == POTX_STRING_BOTH ? ' (dup)' : '');
         break;
       case POTX_STRING_INSTALLER:
         $_potx_install[$value][$file][] = $line;
