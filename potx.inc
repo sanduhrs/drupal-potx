@@ -177,12 +177,10 @@ function _potx_process_file($file_path, $strip_prefix = 0, $save_callback = '_po
     if ($api_version == POTX_API_6) {  
       _potx_find_menu_hook($file_name, $name_parts['filename'], $save_callback);
     }  
-    _potx_find_node_types_hook($file_name, $name_parts['filename'], $save_callback);
     // Add the machine readable module name.
     $save_callback($name_parts['filename'], $file_name);
   }
-  
-  if ($name_parts['extension'] == 'theme') {
+  elseif ($name_parts['extension'] == 'theme') {
     // Add the theme name.
     $save_callback($name_parts['filename'], $file_name);
   }
@@ -746,14 +744,19 @@ function _potx_find_perm_hook($file, $filebase, $save_callback) {
       }
     }
     else {
+      $count = 0;
       foreach ($_potx_lookup[$filebase .'_perm'] as $ti) {
         $tn = $ti;
         while (is_array($_potx_tokens[$tn]) || $_potx_tokens[$tn] != '}') {
           if (is_array($_potx_tokens[$tn]) && $_potx_tokens[$tn][0] == T_CONSTANT_ENCAPSED_STRING) {
             $save_callback(_potx_format_quoted_string($_potx_tokens[$tn][1]), $file, $_potx_tokens[$tn][2]);
+            $count++;
           }
           $tn++;
         }
+      }
+      if (!$count) {
+        _potx_status(t("Found a hook_perm() implementation in %filename, but there were no literally provided permissions to record.\n\n", array('%filename' => $file)), 'error');
       }
     }
   }
@@ -818,36 +821,6 @@ function _potx_find_menu_hook($file, $filebase, $save_callback) {
           }
           else {
             _potx_status(t("Invalid menu %element definition found in %hook in %filename on line %lineno\n\n", array('%element' => $_potx_tokens[$tn][1], '%filename' => $file, '%hook' => $filebase .'_menu()', '%lineno' => $_potx_tokens[$tn][2])), 'error');
-          }
-        }
-        $tn++;
-      }
-    }
-  }
-}
-
-/**
- * Detect oldschool node type names from hook_node_types().
- *
- * @param $file
- *   Full path name of file parsed.
- * @param $filebase
- *   Filenaname of file parsed.
- * @param $save_callback
- *   Callback function used to save strings.
- */
-function _potx_find_node_types_hook($file, $filebase, $save_callback) {
-  global $_potx_tokens, $_potx_lookup;
-
-  if (isset($_potx_lookup[$filebase .'_node_types'])) {
-    foreach ($_potx_lookup[$filebase .'_node_types'] as $ti) {
-      $line = $_potx_tokens[$ti][2]; // We can actually target the line each token is on, but this is enough.
-      $end = _potx_find_end_of_function($ti);
-      $tn = $ti;
-      while ($tn < $end) {
-        if (is_array($_potx_tokens[$tn])) {
-          if ($_potx_tokens[$tn][0] == T_CONSTANT_ENCAPSED_STRING) {
-            $save_callback(_potx_format_quoted_string($_potx_tokens[$tn][1]), $file, $line);
           }
         }
         $tn++;
@@ -1013,7 +986,7 @@ function _potx_find_info_file_strings($file_path, $file_name, $save_callback, $a
     }
   }
   
-  // Add regions names from themes
+  // Add regions names from themes.
   if (isset($info['regions']) && is_array($info['regions'])) {
     foreach($info['regions'] as $region => $region_name) {
       $save_callback($region_name, $file_name);
