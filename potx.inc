@@ -177,12 +177,10 @@ function _potx_process_file($file_path, $strip_prefix = 0, $save_callback = '_po
     if ($api_version == POTX_API_6) {  
       _potx_find_menu_hook($file_name, $name_parts['filename'], $save_callback);
     }  
-    _potx_find_node_types_hook($file_name, $name_parts['filename'], $save_callback);
     // Add the machine readable module name.
     $save_callback($name_parts['filename'], $file_name);
   }
-  
-  if ($name_parts['extension'] == 'theme') {
+  elseif ($name_parts['extension'] == 'theme') {
     // Add the theme name.
     $save_callback($name_parts['filename'], $file_name);
   }
@@ -191,11 +189,19 @@ function _potx_process_file($file_path, $strip_prefix = 0, $save_callback = '_po
   if ($basename == 'locale.inc') {
     _potx_find_language_names($file_name, $save_callback, $api_version);
   }
-  if ($basename == 'locale.module') {
+  elseif ($basename == 'locale.module') {
     _potx_add_date_strings($file_name, $save_callback, $api_version);
   }
-  if ($basename == 'common.inc') {
+  elseif ($basename == 'common.inc') {
     _potx_add_format_interval_strings($file_name, $save_callback);
+  }
+  elseif ($basename == 'system.module') {
+    _potx_add_default_region_names($file_name, $save_callback, $api_version);
+  }
+  elseif ($basename == 'user.module') {
+    // Save default user role names.
+    $save_callback('anonymous user', $file_name);
+    $save_callback('authenticated user', $file_name);
   }
 }
 
@@ -738,14 +744,19 @@ function _potx_find_perm_hook($file, $filebase, $save_callback) {
       }
     }
     else {
+      $count = 0;
       foreach ($_potx_lookup[$filebase .'_perm'] as $ti) {
         $tn = $ti;
         while (is_array($_potx_tokens[$tn]) || $_potx_tokens[$tn] != '}') {
           if (is_array($_potx_tokens[$tn]) && $_potx_tokens[$tn][0] == T_CONSTANT_ENCAPSED_STRING) {
             $save_callback(_potx_format_quoted_string($_potx_tokens[$tn][1]), $file, $_potx_tokens[$tn][2]);
+            $count++;
           }
           $tn++;
         }
+      }
+      if (!$count) {
+        _potx_status(t("Found a hook_perm() implementation in %filename, but there were no literally provided permissions to record.\n\n", array('%filename' => $file)), 'error');
       }
     }
   }
@@ -819,36 +830,6 @@ function _potx_find_menu_hook($file, $filebase, $save_callback) {
 }
 
 /**
- * Detect oldschool node type names from hook_node_types().
- *
- * @param $file
- *   Full path name of file parsed.
- * @param $filebase
- *   Filenaname of file parsed.
- * @param $save_callback
- *   Callback function used to save strings.
- */
-function _potx_find_node_types_hook($file, $filebase, $save_callback) {
-  global $_potx_tokens, $_potx_lookup;
-
-  if (isset($_potx_lookup[$filebase .'_node_types'])) {
-    foreach ($_potx_lookup[$filebase .'_node_types'] as $ti) {
-      $line = $_potx_tokens[$ti][2]; // We can actually target the line each token is on, but this is enough.
-      $end = _potx_find_end_of_function($ti);
-      $tn = $ti;
-      while ($tn < $end) {
-        if (is_array($_potx_tokens[$tn])) {
-          if ($_potx_tokens[$tn][0] == T_CONSTANT_ENCAPSED_STRING) {
-            $save_callback(_potx_format_quoted_string($_potx_tokens[$tn][1]), $file, $line);
-          }
-        }
-        $tn++;
-      }
-    }
-  }
-}
-
-/**
  * Get languages names from Drupal's locale.inc.
  *
  * @param $file
@@ -902,7 +883,7 @@ function _potx_find_version_number($code, $file, $version_callback) {
   }
   else {
     // Unknown version information.
-    $version_callback('n/a', $file);
+    $version_callback($file .': n/a', $file);
   }
 }
 
@@ -958,6 +939,30 @@ function _potx_add_format_interval_strings($file, $save_callback) {
 }
 
 /**
+ * Add default theme region names, which cannot be extracted otherwise.
+ * These default names are defined in system.module
+ *
+ * @param $file
+ *   Name of the file parsed.
+ * @param $save_callback
+ *   Callback function used to save strings.
+ * @param $api_version
+ *   Drupal API version to work with.
+ */
+function _potx_add_default_region_names($file, $save_callback, $api_version = POTX_API_6) {
+  $regions = array(
+    'left' => 'Left sidebar',
+    'right' => 'Right sidebar',
+    'content' => 'Content',
+    'header' => 'Header',
+    'footer' => 'Footer',
+  );
+  foreach($regions as $region) {
+    $save_callback($region, $file);
+  }
+}
+
+/**
  * Parse an .info file and add relevant strings to the list.
  *
  * @param $file_path
@@ -982,6 +987,13 @@ function _potx_find_info_file_strings($file_path, $file_name, $save_callback, $a
   foreach (array('name', 'description', 'package') as $key) {
     if (isset($info[$key])) {
       $save_callback($info[$key], $file_name);
+    }
+  }
+  
+  // Add regions names from themes.
+  if (isset($info['regions']) && is_array($info['regions'])) {
+    foreach($info['regions'] as $region => $region_name) {
+      $save_callback($region_name, $file_name);
     }
   }
 }
@@ -1119,10 +1131,14 @@ function _potx_save_string($value = NULL, $file = NULL, $line = 0, $string_mode 
   if (isset($value)) {
     switch ($string_mode) {
       case POTX_STRING_BOTH:
+        // Mark installer strings as duplicates of runtime strings if
+        // the string was both recorded in the runtime and in the installer.
         $_potx_install[$value][$file][] = $line .' (dup)';
         // Break intentionally missing.
       case POTX_STRING_RUNTIME:
-        $_potx_strings[$value][$file][] = $line;
+        // Mark runtime strings as duplicates of installer strings if
+        // the string was both recorded in the runtime and in the installer.
+        $_potx_strings[$value][$file][] = $line .($string_mode == POTX_STRING_BOTH ? ' (dup)' : '');
         break;
       case POTX_STRING_INSTALLER:
         $_potx_install[$value][$file][] = $line;
