@@ -100,7 +100,7 @@ function potx_select_form_submit($form_id, &$form) {
 
   // This could take some time.
   @set_time_limit(0);
-  include_once drupal_get_path('module', 'potx') . '/potx.inc';
+  include_once drupal_get_path('module', 'potx') .'/potx.inc';
 
   // Silence status messages.
   _potx_status(POTX_STATUS_MESSAGE);
@@ -118,13 +118,13 @@ function potx_select_form_submit($form_id, &$form) {
   // A specific module file was requested.
   if ($pathinfo['extension'] == 'module') {
     $filename = basename($pathinfo['basename'], '.module');
-    $files = _potx_explore_dir($pathinfo['dirname'] . '/', $filename, POTX_API_5);
+    $files = _potx_explore_dir($pathinfo['dirname'] .'/', $filename, POTX_API_5);
     $strip_prefix = 1 + strlen($pathinfo['dirname']);
     $outputname = $filename;
   }
   // A directory name was requested.
   else {
-    $files = _potx_explore_dir($form['module'] . '/', '*', POTX_API_5);
+    $files = _potx_explore_dir($form['module'] .'/', '*', POTX_API_5);
     $strip_prefix = 1 + strlen($form['module']);
     $outputname = $pathinfo['basename'];
   }
@@ -180,7 +180,7 @@ function _potx_build_module_form(&$form, &$modules, $dirname = '') {
   $dirkeys = array_keys($modules);
   
   // A directory with one module.
-  if ($modules_in_dir && (count($modules) == 1)) { 
+  if (isset($modules_in_dir) && (count($modules) == 1)) { 
     $module_dir = dirname($modules[$dirkeys[0]]->filename);
     $form[_potx_form_id('dir', $module_dir)] = array(
       '#type' => 'radio',
@@ -197,7 +197,7 @@ function _potx_build_module_form(&$form, &$modules, $dirname = '') {
   // A directory with multiple modules in it.
   if (preg_match('!/modules\\b(/.+)?!', $dirname, $pathmatch)) {
     $subst = array('@dir_name' => substr($dirname, 1));
-    if ($pathmatch[1]) {
+    if (isset($pathmatch[1])) {
       $form[_potx_form_id('dir', $dirname)] = array(
         '#type' => 'radio',
         '#title' => t('Extract from all modules in directory "@dir_name"', $subst),
@@ -226,7 +226,7 @@ function _potx_build_module_form(&$form, &$modules, $dirname = '') {
       $subst = array(
         '%module_dir' => dirname($modules[$entry]->filename),
         '%module_name' => basename($modules[$entry]->basename, '.module'),
-        '%module_pattern' => basename($modules[$entry]->basename, '.module'). '.*',
+        '%module_pattern' => basename($modules[$entry]->basename, '.module') .'.*',
       );
       $element[_potx_form_id('mod', $modules[$entry]->basename)] = array(
         '#type' => 'radio',
@@ -258,7 +258,7 @@ function _potx_build_module_form(&$form, &$modules, $dirname = '') {
  *   The generated ID.
  */
 function _potx_form_id($type, $path) {
-  return "potx-$type-" . preg_replace('/[^a-zA-Z0-9]+/', '-', $path);
+  return 'potx-'. $type .'-'. preg_replace('/[^a-zA-Z0-9]+/', '-', $path);
 }
 
 /**
@@ -288,7 +288,7 @@ function _potx_module_list() {
     }
 
     // Information about modules in this directory.
-    $dir['#'.$file->basename] = $file;
+    $dir['#'. $file->basename] = $file;
     $dir['.modulecount'] = isset($dir['.modulecount']) ? $dir['.modulecount'] + 1 : 1;
   }
 

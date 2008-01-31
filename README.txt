@@ -18,14 +18,9 @@ basically two ways to use the contents of this project:
    the module or modules you want to have a translation template for, 
    and submit the form. You will get one single template file generated.
 
-The command line functionality is quite mature now, because it was 
-basically carried over and refactored from extractor.php, previously 
-hosted as part of the translation templates themselfs. The web based 
-functionality is still in its early stages.
-	
-Note: If you only get a white browser screen as response to the 
-extraction request, the memory limit for PHP on the server is probably 
-too low, try to set that higher.
+   Note: If you only get a white browser screen as response to the 
+   extraction request, the memory limit for PHP on the server is probably 
+   too low, try to set that higher.
 
 USING potx-cli.php ON THE COMMAND LINE
 ================================================================================
