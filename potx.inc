@@ -447,6 +447,11 @@ function _potx_get_header($file, $template_export_langcode = NULL, $api_version 
 function _potx_write_files($http_filename = NULL, $content_disposition = 'inline') {
   global $_potx_store;
   
+  if (!is_array($_potx_store)) {
+    // If $_potx_store is not an array, then we did not find any strings to export.
+    return;
+  }
+  
   // Possibly merge some files if we have more then one.
   if (count($_potx_store) > 1) {
     foreach ($_potx_store as $file => $contents) {
@@ -1070,10 +1075,15 @@ function _potx_parse_js_string($string) {
  */
 function _potx_explore_dir($path = '', $basename = '*', $api_version = POTX_API_6) {
   $files = glob("$path$basename.{php,inc,module,engine,theme,install,info,profile". ($api_version == POTX_API_6 ? ',js}' :'}'), GLOB_BRACE);
+  if (!is_array($files)) {
+    $files = array();
+  }
   $dirs = glob("$path*", GLOB_ONLYDIR);
-  foreach ($dirs as $dir) {
-    if (!preg_match("!(^|.+/)(CVS|.svn|.git)$!", $dir)) {
-      $files = array_merge($files, _potx_explore_dir("$dir/", $basename));
+  if (is_array($dirs)) {
+    foreach ($dirs as $dir) {
+      if (!preg_match("!(^|.+/)(CVS|.svn|.git)$!", $dir)) {
+        $files = array_merge($files, _potx_explore_dir("$dir/", $basename));
+      }
     }
   }
   // Skip our own files, because we don't want to get strings from them 
