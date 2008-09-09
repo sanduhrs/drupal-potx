@@ -456,7 +456,7 @@ function _potx_write_files($http_filename = NULL, $content_disposition = 'inline
   if (count($_potx_store) > 1) {
     foreach ($_potx_store as $file => $contents) {
       // Merge too small files into general.pot.
-      if ($contents['count'] < 10 && $file != 'general') {
+      if ($contents['count'] < 10 && $file != 'general' && $file != 'installer') {
         if (!isset($_potx_store['general'])) {
           $_potx_store['general'] = $contents;
         }
