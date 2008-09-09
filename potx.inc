@@ -1071,12 +1071,22 @@ function _potx_parse_js_string($string) {
  *   Add folder exceptions for other version control systems.
  */
 function _potx_explore_dir($path = '', $basename = '*', $api_version = POTX_API_6) {
-  $files = glob("$path$basename.{php,inc,module,engine,theme,install,info,profile". ($api_version == POTX_API_6 ? ',js}' :'}'), GLOB_BRACE);
-  if (!is_array($files)) {
-    // Switch to empty array on error, since further code expects array.
-    $files = array();
+  // It would be so nice to just use GLOB_BRACE, but it is not available on all
+  // operarting systems, so we are working around the missing functionality.
+  $extensions = array('php', 'inc', 'module', 'engine', 'theme', 'install', 'info', 'profile');
+  if ($api_version == POTX_API_6) {
+    $extensions[] = 'js';
   }
-  $dirs = glob("$path*", GLOB_ONLYDIR);
+  $files = array();
+  foreach ($extensions as $extension) {
+    $files_here = glob($path . $basename .'.'. $extension);
+    if (is_array($files_here)) {
+      $files = array_merge($files, $files_here);
+    }
+  }
+  
+  // Grab subdirectories.
+  $dirs = glob($path .'*', GLOB_ONLYDIR);
   if (is_array($dirs)) {
     foreach ($dirs as $dir) {
       if (!preg_match("!(^|.+/)(CVS|.svn|.git)$!", $dir)) {
