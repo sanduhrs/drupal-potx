@@ -132,6 +132,7 @@ function _potx_process_file($file_path, $strip_prefix = 0, $save_callback = '_po
     return;
   }
   elseif ($name_parts['extension'] == 'js' && $api_version > POTX_API_5) {
+    // @todo: D7 context support.
     _potx_parse_js_file($code, $file_name, $save_callback);
   }
 
@@ -171,21 +172,24 @@ function _potx_process_file($file_path, $strip_prefix = 0, $save_callback = '_po
   unset($raw_tokens);
 
   // Regular t() calls with different usages.
+  // @todo: Add context support.
   _potx_find_t_calls($file_name, $save_callback);
   _potx_find_t_calls($file_name, $save_callback, '_locale_import_message', POTX_STRING_BOTH);
   _potx_find_t_calls($file_name, $save_callback, '$t', POTX_STRING_BOTH);
   _potx_find_t_calls($file_name, $save_callback, 'st', POTX_STRING_INSTALLER);
 
   if ($api_version > POTX_API_5) {
-    // Watchdog calls have both of their arguments translated in Drupal 6.x.
+    // Watchdog calls have both of their arguments translated from Drupal 6.x.
     _potx_find_watchdog_calls($file_name, $save_callback);
   }
   else {
-    // Watchdog calls only have their first argument translated in Drupal 5.x.
+    // Watchdog calls only have their first argument translated in Drupal 5.x
+    // and before.
     _potx_find_t_calls($file_name, $save_callback, 'watchdog');
   }
 
   // Plurals need unique parsing.
+  // @todo: Add context support.
   _potx_find_format_plural_calls($file_name, $save_callback, $api_version);
 
   if ($name_parts['extension'] == 'module') {
@@ -198,14 +202,15 @@ function _potx_process_file($file_path, $strip_prefix = 0, $save_callback = '_po
   }
 
   // Special handling of some Drupal core files.
-  if ($basename == 'locale.inc') {
+  if (($basename == 'locale.inc' && $api_version < POTX_API_7) || $basename == 'iso.inc') {
     _potx_find_language_names($file_name, $save_callback, $api_version);
   }
   elseif ($basename == 'locale.module') {
+    // @todo: Context support.
     _potx_add_date_strings($file_name, $save_callback, $api_version);
   }
   elseif ($basename == 'common.inc') {
-    _potx_add_format_interval_strings($file_name, $save_callback);
+    _potx_add_format_interval_strings($file_name, $save_callback, $api_version);
   }
   elseif ($basename == 'system.module') {
     _potx_add_default_region_names($file_name, $save_callback, $api_version);
@@ -214,6 +219,10 @@ function _potx_process_file($file_path, $strip_prefix = 0, $save_callback = '_po
     // Save default user role names.
     $save_callback('anonymous user', $file_name);
     $save_callback('authenticated user', $file_name);
+    if ($api_version > POTX_API_6) {
+      // Administator role is included by default from Drupal 7.
+      $save_callback('administrator', $file_name);
+    }
   }
 }
 
@@ -707,7 +716,7 @@ function _potx_find_t_calls($file, $save_callback, $function_name = 't', $string
 }
 
 /**
- * Detect all occurances of watchdog() calls. Only for Drupal 6.
+ * Detect all occurances of watchdog() calls. Only from Drupal 6.
  *
  * These sequences are searched for:
  *   watchdog + "(" + T_CONSTANT_ENCAPSED_STRING + "," +
@@ -749,7 +758,8 @@ function _potx_find_watchdog_calls($file, $save_callback) {
  * These sequences are searched for:
  *   T_STRING("format_plural") + "(" + ..anything (might be more tokens).. +
  *   "," + T_CONSTANT_ENCAPSED_STRING +
- *   "," + T_CONSTANT_ENCAPSED_STRING + parenthesis (or comma allowed in Drupal 6)
+ *   "," + T_CONSTANT_ENCAPSED_STRING + parenthesis (or comma allowed from
+ *   Drupal 6)
  *
  * @param $file
  *   Name of file parsed.
@@ -872,7 +882,7 @@ function _potx_find_end_of_function($here) {
 }
 
 /**
- * List of menu item titles. Only for Drupal 6.
+ * List of menu item titles. Only from Drupal 6.
  *
  * @param $file
  *   Full path name of file parsed.
@@ -1004,15 +1014,22 @@ function _potx_add_date_strings($file, $save_callback, $api_version = POTX_API_6
  *   Name of the file parsed.
  * @param $save_callback
  *   Callback function used to save strings.
+ * @param $api_version
+ *   Drupal API version to work with.
  */
-function _potx_add_format_interval_strings($file, $save_callback) {
+function _potx_add_format_interval_strings($file, $save_callback, $api_version = POTX_API_6) {
   $components = array(
     '1 year' => '@count years',
     '1 week' => '@count weeks',
     '1 day'  => '@count days',
     '1 hour' => '@count hours',
     '1 min'  => '@count min',
-    '1 sec'  => '@count sec');
+    '1 sec'  => '@count sec'
+  );
+  if ($api_version > POTX_API_6) {
+    // Month support added in Drupal 7.
+    $components['1 month'] = '@count months';
+  }
 
   foreach ($components as $singular => $plural) {
     $save_callback($singular ."\0". $plural, $file);
@@ -1038,6 +1055,12 @@ function _potx_add_default_region_names($file, $save_callback, $api_version = PO
     'header' => 'Header',
     'footer' => 'Footer',
   );
+  if ($api_version > POTX_API_6) {
+    // @todo: Update with final region list when D7 stabilizes.
+    $regions['highlight'] = 'Highlighted content';
+    $regions['help'] = 'Help';
+    $regions['page_top'] = 'Page top';
+  }
   foreach ($regions as $region) {
     $save_callback($region, $file);
   }
@@ -1080,7 +1103,7 @@ function _potx_find_info_file_strings($file_path, $file_name, $save_callback, $a
 }
 
 /**
- * Parse a JavaScript file for translatables. Only for Drupal 6.
+ * Parse a JavaScript file for translatables. Only from Drupal 6.
  *
  * Extracts strings wrapped in Drupal.t() and Drupal.formatPlural()
  * calls and inserts them into potx storage.
@@ -1129,7 +1152,7 @@ function _potx_parse_js_file($code, $file, $save_callback) {
 }
 
 /**
- * Clean up string found in JavaScript source code. Only for Drupal 6.
+ * Clean up string found in JavaScript source code. Only from Drupal 6.
  */
 function _potx_parse_js_string($string) {
   return _potx_format_quoted_string(implode('', preg_split('~(?<!\\\\)[\'"]\s*\+\s*[\'"]~s', $string)));
@@ -1266,7 +1289,7 @@ if (!function_exists('t')) {
 
 if (!function_exists('drupal_parse_info_file')) {
   // If invoked outside of Drupal, drupal_parse_info_file() will not be available,
-  // but we need this function to properly parse Drupal 6 .info files.
+  // but we need this function to properly parse Drupal 6/7 .info files.
   // Directly copied from common.inc,v 1.704 2007/10/19 10:30:54 goba Exp.
   function drupal_parse_info_file($filename) {
     $info = array();
