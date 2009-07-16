@@ -125,6 +125,13 @@ $o = format_plural($days, 'one day', '@count days');
 $p = format_plural(embedded_function_call($count), 'one day', '@count days');
 $q = t('Concatenated' . 'string.' . 'You should never do this.');
 $r = t("Test string with @complex %variables !smile", array('@complex' => time(), '%variable' => t('variables'), '!smile' => ':)'));
+$s = t('Test context', array(), array('context' => 'Context \'support'));
+$t = t('Test context', $array_var, array('context' => 'Context support'));
+$u = t('Test context', $array_var, array('not-context' => 'Some other string'));
+$v = t("Test string with @complex %variables !smile", array('@complex' => time(), '%variable' => t('variables'), '!smile' => ':)'), array('context' => 'Test strings'));
+$w = t("Test string with @complex %variables !smile", array('@complex' => time(), '%variable' => t('variables'), '!smile' => ':)'), array('context' => t('Test strings')));
+$x = format_plural($days, 'one day', '@count days', array(), array('context' => 'Dates'));
+$y = format_plural($days, 'one day', '@count days', array(), array('context' => t('Dates')));
 
 function embedded_function_call($dummy) { return 12; }
 
