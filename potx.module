@@ -16,7 +16,7 @@
  */
 function potx_help($path, $arg) {
   switch ($path) {
-    case 'admin/international/translate/extract':
+    case 'admin/config/regional/translate/extract':
       return '<p>'. t('This page allows you to generate translation templates for module and theme files. Select the module or theme you wish to generate a template file for. A single Gettext Portable Object (Template) file is generated, so you can easily save it and start translation.') .'</p>';
   }
 }
