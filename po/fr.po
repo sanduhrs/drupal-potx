@@ -1,5 +1,4 @@
 # translation of potxfr.po to français
-# $Id$
 # LANGUAGE translation of Drupal (general)
 # Copyright 2007 NAME <EMAIL@ADDRESS>
 # Generated from files:

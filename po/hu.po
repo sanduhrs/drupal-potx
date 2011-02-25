@@ -1,5 +1,4 @@
 # translation of potx-module.po to Hungarian
-# $Id$
 # LANGUAGE translation of Drupal (potx.module)
 # Copyright YEAR NAME <EMAIL@ADDRESS>
 # Generated from files:
