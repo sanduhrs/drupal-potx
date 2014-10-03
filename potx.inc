@@ -365,11 +365,14 @@ function _potx_process_file($file_path, $strip_prefix = 0, $save_callback = '_po
 
 /**
  * Executes tasks that need to happen after all the files have been processed.
+ *
+ * @param string $save_callback
+ * @param int $api_version
  */
 function potx_finish_processing($save_callback = '_potx_save_string', $api_version = POTX_API_CURRENT) {
   if ($api_version > POTX_API_7) {
     // Parsing shipped configuration has to happen after processing all schemas.
-    _potx_parse_shipped_configuration($save_callback, $api_option);
+    _potx_parse_shipped_configuration($save_callback, $api_version);
   }
 }
 
