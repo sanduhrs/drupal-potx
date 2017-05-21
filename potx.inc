@@ -2104,7 +2104,7 @@ function _potx_parse_yaml_file($code, $file_name, $file_path, $save_callback) {
       $potx_callbacks['schema_store_lookup']($keys, $module_name);
     }
   }
-  elseif (preg_match('~[^/]+.info.yml~', $file_name)) {
+  elseif (preg_match('~[^/]+\.info\.yml~', $file_name)) {
     $module_name = basename(dirname($file_name));
     $_potx_module_metadata[$module_name]['dependencies'] = isset($yaml['dependencies']) ? $yaml['dependencies'] : array();
   }
