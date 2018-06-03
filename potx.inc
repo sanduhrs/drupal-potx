@@ -17,23 +17,15 @@
  *   'Localization server' module: http://drupal.org/project/l10n_server
  */
 
-/**
- * Use Twig and the Symfony YAML parser, found in the vendor directory.
- */
-set_include_path(get_include_path() . PATH_SEPARATOR . __DIR__ . '/vendor');
-spl_autoload_register(function($c){
-  @include preg_replace('#\\\|_(?!.*\\\)#','/',$c).'.php';
-});
-
 use Symfony\Component\Yaml\Yaml;
 use Symfony\Component\Yaml\Exception\ParseException;
 
 /**
- * The current Drupal major API verion.
+ * The current Drupal major API version.
  *
  * This should be the only difference between different branches of potx.inc
  */
-define('POTX_API_CURRENT', 7);
+define('POTX_API_CURRENT', 8);
 
 /**
  * Silence status reports.
@@ -144,7 +136,6 @@ define('POTX_JS_STRING', '(?:(?:\'(?:\\\\\'|[^\'])*\'|"(?:\\\\"|[^"])*")(?:\s*\+
  */
 define('POTX_JS_OBJECT', '\{.*?\}');
 
-
 /**
  * Regular expression to match an object containing a key 'context'.
  *
@@ -182,7 +173,6 @@ define('POTX_JS_OBJECT_CONTEXT', '
  *   Drupal API version to work with.
  */
 function _potx_process_file($file_path, $strip_prefix = 0, $save_callback = '_potx_save_string', $version_callback = '_potx_save_version', $api_version = POTX_API_CURRENT) {
-  global $_potx_tokens, $_potx_lookup;
 
   // Figure out the basename and extension to select extraction method.
   $basename = basename($file_path);
@@ -208,6 +198,15 @@ function _potx_process_file($file_path, $strip_prefix = 0, $save_callback = '_po
   elseif ($name_parts['extension'] == 'twig' && $api_version > POTX_API_7) {
     _potx_parse_twig_file($code, $file_name, $save_callback);
   }
+
+  _potx_parse_php_file($code, $file_name, $save_callback, $name_parts, $basename, $api_version);
+}
+
+/**
+ * Parse a PHP file for translatables.
+ */
+function _potx_parse_php_file($code, $file_name, $save_callback, $name_parts, $basename, $api_version) {
+  global $_potx_tokens, $_potx_lookup;
 
   $constraint_extract = FALSE;
   if (substr($name_parts['filename'], -10) == 'Constraint' && $api_version > POTX_API_7) {
@@ -552,9 +551,14 @@ function _potx_build_files($string_mode = POTX_STRING_RUNTIME, $build_mode = POT
  *   Drupal API version to work with.
  */
 function _potx_translation_export($translation_export_langcode, $string, $plural = NULL, $api_version = POTX_API_CURRENT) {
-  include_once 'includes/locale.inc';
+  if ($api_version < POTX_API_8) {
+    include_once 'includes/locale.inc';
+  }
+  else {
+    module_load_include('inc', 'potx', 'potx.locale');
+  }
 
-  // Stip out slash escapes.
+  // Strip out slash escapes.
   $string = stripcslashes($string);
 
   // Column and table name changed between versions.
@@ -573,7 +577,12 @@ function _potx_translation_export($translation_export_langcode, $string, $plural
     // String with plural variants. Fill up source string array first.
     $plural = stripcslashes($plural);
     $strings = array();
-    $number_of_plurals = db_query('SELECT plurals FROM {'. $language_table ."} WHERE {$language_column} = :langcode", array(':langcode' => $translation_export_langcode))->fetchField();
+    if ($api_version >= POTX_API_8) {
+      $number_of_plurals = \Drupal::service('locale.plural.formula')->getNumberOfPlurals($translation_export_langcode);
+    }
+    else {
+      $number_of_plurals = db_query('SELECT plurals FROM {'. $language_table ."} WHERE {$language_column} = :langcode", array(':langcode' => $translation_export_langcode))->fetchField();
+    }
     $plural_index = 0;
     while ($plural_index < $number_of_plurals) {
       if ($plural_index == 0) {
@@ -614,7 +623,62 @@ function _potx_translation_export($translation_export_langcode, $string, $plural
 }
 
 /**
- * Returns a header generated for a given file
+ * Return the plural form of a language. source: the gettext library.
+ *
+ * @param $langcode
+ *   The language code
+ *
+ * @returns
+ *   The plural form of the language, used in the .po file header.
+ */
+function _potx_get_plural_form($langcode) {
+  $plural_forms = array(
+    'ja' => '0',
+    'vi' => '0',
+    'ko' => '0',
+    'en' => '(n != 1)',
+    'de' => '(n != 1)',
+    'nl' => '(n != 1)',
+    'sv' => '(n != 1)',
+    'da' => '(n != 1)',
+    'no' => '(n != 1)',
+    'nb' => '(n != 1)',
+    'nn' => '(n != 1)',
+    'fo' => '(n != 1)',
+    'es' => '(n != 1)',
+    'pt' => '(n != 1)',
+    'it' => '(n != 1)',
+    'bg' => '(n != 1)',
+    'el' => '(n != 1)',
+    'fi' => '(n != 1)',
+    'et' => '(n != 1)',
+    'he' => '(n != 1)',
+    'eo' => '(n != 1)',
+    'hu' => '(n != 1)',
+    'tr' => '(n != 1)',
+    'fa' => '(n != 1)',
+    'pt_BR' => '(n > 1)',
+    'fr' => '(n > 1)',
+    'lv' => '(n%10==1 && n%100!=11 ? 0 : n != 0 ? 1 : 2)',
+    'ga' => 'n==1 ? 0 : n==2 ? 1 : 2',
+    'ro' => 'n==1 ? 0 : (n==0 || (n%100 > 0 && n%100 < 20)) ? 1 : 2',
+    'lt' => '(n%10==1 && n%100!=11 ? 0 : n%10>=2 && (n%100<10 || n%100>=20) ? 1 : 2)',
+    'ru' => '(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2)',
+    'uk' => '(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2)',
+    'be' => '(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2)',
+    'sr' => '(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2)',
+    'hr' => '(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2)',
+    'cs' => '(n==1) ? 0 : (n>=2 && n<=4) ? 1 : 2',
+    'sk' => '(n==1) ? 0 : (n>=2 && n<=4) ? 1 : 2',
+    'pl' => '(n==1 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2)',
+    'sl' => '(n%100==1 ? 0 : n%100==2 ? 1 : n%100==3 || n%100==4 ? 2 : 3)',
+  );
+
+  return isset($plural_forms[$langcode]) ? $plural_forms[$langcode] : NULL;
+}
+
+/**
+ * Returns a header generated for a given file.
  *
  * @param $file
  *   Name of POT file to generate header for
@@ -623,12 +687,31 @@ function _potx_translation_export($translation_export_langcode, $string, $plural
  *   (like plural formulas and language name) included.
  * @param $api_version
  *   Drupal API version to work with.
+ *
+ * @return string
+ *   The header for the translation file.
  */
 function _potx_get_header($file, $template_export_langcode = NULL, $api_version = POTX_API_CURRENT) {
   // We only have language to use if we should export with that langcode.
   $language = NULL;
   if (isset($template_export_langcode)) {
-    $language = db_query($api_version > POTX_API_5 ? "SELECT language, name, plurals, formula FROM {languages} WHERE language = :langcode" : "SELECT locale, name, plurals, formula FROM {locales_meta} WHERE locale = :langcode", array(':langcode' => $template_export_langcode))->fetchObject();
+    if ($api_version >= POTX_API_8) {
+      $languages = \Drupal::languageManager()->getLanguages();
+      /** @var \Drupal\locale\PluralFormula $PluralFormula */
+      $plural_formula = \Drupal::service('locale.plural.formula');
+      $language = (object) array(
+        'name' => $languages[$template_export_langcode]->getName(),
+        'plurals' => $plural_formula->getNumberOfPlurals($template_export_langcode),
+        // @todo PluralFormulaInterface->getFormula() returns a plural element
+        // stack instead of an arithmetic formula. This will be fixed in
+        // https://www.drupal.org/node/2882617
+        //'formula' => $plural_formula->getFormula($template_export_langcode),
+        'formula' => _potx_get_plural_form($template_export_langcode)
+      );
+    }
+    else {
+      $language = db_query($api_version > POTX_API_5 ? "SELECT language, name, plurals, formula FROM {languages} WHERE language = :langcode" : "SELECT locale, name, plurals, formula FROM {locales_meta} WHERE locale = :langcode", array(':langcode' => $template_export_langcode))->fetchObject();
+    }
   }
 
   $output  = '# $'.'Id'.'$'."\n";
@@ -2104,7 +2187,7 @@ function _potx_parse_yaml_file($code, $file_name, $file_path, $save_callback) {
       $potx_callbacks['schema_store_lookup']($keys, $module_name);
     }
   }
-  elseif (preg_match('~[^/]+.info.yml~', $file_name)) {
+  elseif (preg_match('~[^/]+\.info\.yml~', $file_name)) {
     $module_name = basename(dirname($file_name));
     $_potx_module_metadata[$module_name]['dependencies'] = isset($yaml['dependencies']) ? $yaml['dependencies'] : array();
   }

@@ -1,5 +1,10 @@
 <?php
 
+/**
+ * @file
+ * Hook implementations for this module.
+ */
+
 use Symfony\Component\Yaml\Yaml;
 use Symfony\Component\Yaml\Exception\ParseException;
 
@@ -21,12 +26,12 @@ function potx_local_init($module_path = NULL) {
   global $potx_callbacks;
 
   $potx_callbacks = array(
-      'schema_store_lookup' => '_potx_schema_store_lookup',
-      'schema_reverse_lookup' => '_potx_schema_reverse_lookup',
-      'load_module_metadata' => '_potx_load_module_metadata',
-      'store_module_metadata' => '_potx_store_module_metadata',
-      'schema_store' => '_potx_schema_store',
-      'schema_load' => '_potx_schema_load',
+    'schema_store_lookup' => '_potx_schema_store_lookup',
+    'schema_reverse_lookup' => '_potx_schema_reverse_lookup',
+    'load_module_metadata' => '_potx_load_module_metadata',
+    'store_module_metadata' => '_potx_store_module_metadata',
+    'schema_store' => '_potx_schema_store',
+    'schema_load' => '_potx_schema_load',
   );
 
   if ($module_path !== NULL) {
@@ -48,10 +53,12 @@ function _potx_find_all_modules($module_path) {
     $module_path = $module_path . '/';
   }
 
-  // The list of directories to check in the path, to find out if we are in a Drupal install directory.
+  // The list of directories to check in the path, to find out if we are in a
+  // Drupal install directory.
   $checks = array('/sites/', '/core/', '/profiles/', '/modules/', '/themes/');
 
-  // The list of paths that could contain "modules/" or "themes/" subdirectories.
+  // The list of paths that could contain "modules/" or "themes/"
+  // subdirectories.
   $search_paths = array();
 
   foreach ($checks as $check) {
@@ -62,7 +69,7 @@ function _potx_find_all_modules($module_path) {
       $root = $parts[0];
 
       // The Drupal core directory contains a config/schema subdirectory, which
-      //  is not part of any module or theme.
+      // is not part of any module or theme.
       $_potx_found_modules['core']['path'] = $root . '/core';
 
       $search_paths[] = $root;
@@ -95,7 +102,7 @@ function _potx_find_all_modules($module_path) {
  * Recursively find all modules in a given path, by looking for .info.yml files.
  *
  * @param string $path
- *   The search path
+ *   The search path.
  */
 function _potx_find_modules($path) {
   global $_potx_found_modules;
@@ -124,11 +131,10 @@ function _potx_find_modules($path) {
  *
  * @param array $keys
  *   List of config matching keys in a config schema file.
- *
  * @param string $module_name
  *   Name of the module containing the schema.
  */
-function _potx_schema_store_lookup($keys, $module_name) {
+function _potx_schema_store_lookup(array $keys, $module_name) {
   global $_potx_schema_lookup;
   $_potx_schema_lookup = array_merge($_potx_schema_lookup, array_fill_keys($keys, $module_name));
 }
@@ -146,7 +152,7 @@ function _potx_schema_store_lookup($keys, $module_name) {
  *
  * @see _potx_find_matching_schema()
  */
-function _potx_schema_reverse_lookup($matching_candidates) {
+function _potx_schema_reverse_lookup(array $matching_candidates) {
   global $_potx_schema_lookup;
   global $_potx_reverse_lookup_built;
 
@@ -190,14 +196,16 @@ function _potx_build_reverse_lookup() {
 
         try {
           $yaml = Yaml::parse($code);
-          $keys = array_keys($yaml);
-
-          $potx_callbacks['schema_store_lookup']($keys, $module_name);
-        } catch (ParseException $e) {
-          watchdog('potx', "YAML parseing error on file @path: @error", array(
-              '@path' => $file_path,
-              '@error' => $e->getMessage(),
-          ));
+          if (is_array($yaml)) {
+            $keys = array_keys($yaml);
+            $potx_callbacks['schema_store_lookup']($keys, $module_name);
+          }
+        }
+        catch (ParseException $e) {
+          \Drupal::logger('potx')->error("YAML parseing error on file @path: @error", [
+            '@path' => $file_name,
+            '@error' => $e->getMessage(),
+          ]);
         }
       }
     }
@@ -237,12 +245,12 @@ function _potx_load_module_metadata($module_name) {
     try {
       $info_yaml = Yaml::parse($code);
       $_potx_module_metadata[$module_name]['dependencies'] = isset($info_yaml['dependencies']) ? $info_yaml['dependencies'] : array();
-    } catch (ParseException $e) {
-      watchdog('potx', "YAML parseing error on file @path: @error", array(
-          '@path' => $file_path,
-          '@error' => $e->getMessage(),
-      ));
-
+    }
+    catch (ParseException $e) {
+      \Drupal::logger('potx')->error("YAML parseing error on file @path: @error", [
+        '@path' => $info_path,
+        '@error' => $e->getMessage(),
+      ]);
       return FALSE;
     }
   }
@@ -264,11 +272,11 @@ function _potx_load_module_metadata($module_name) {
  * Not used locally by potx.
  *
  * @param string $module_name
- *   The module's name
+ *   The module's name.
  * @param array $metadata
- *   The module's metadata
+ *   The module's metadata.
  */
-function _potx_store_module_metadata($module_name, $metadata) {
+function _potx_store_module_metadata($module_name, array $metadata) {
   // Intentionally Left Empty.
 }
 
@@ -294,6 +302,9 @@ function _potx_schema_store($module_name) {
  *
  * @param string $module_name
  *   The module's name.
+ *
+ * @return array|null
+ *   The module's processed schema or NULL.
  */
 function _potx_schema_load($module_name) {
   global $_potx_schema_cache;

@@ -15,16 +15,21 @@
  * as well.
  */
 function potx_requirements($phase) {
-  $requirements = array();
-  $t = get_t();
+  $requirements = [];
 
-  if (!function_exists('token_get_all')) {
-    $requirements['potx_tokenizer'] = array(
-      'title' => $t('PHP tokenizer for Translation template extractor'),
-      'value' => $t('Not available'),
-      'description' => $t('The <a href="@tokenizer">PHP tokenizer functions</a> are required.', array('@tokenizer' => 'http://php.net/tokenizer')),
-      'severity' => REQUIREMENT_ERROR,
-    );
+  if ($phase == 'install' || $phase == 'runtime') {
+    $ok = function_exists('token_get_all');
+    $requirements['potx_tokenizer'] = [
+      'title' => t('PHP tokenizer for Translation template extractor'),
+      'value' => $ok  ? t('Available') : t('Not available'),
+      'description' => t(
+        'The <a href="@tokenizer">PHP tokenizer functions</a> are required.',
+        [
+          '@tokenizer' => 'http://php.net/tokenizer',
+        ]
+      ),
+      'severity' => $ok ? REQUIREMENT_INFO : REQUIREMENT_ERROR,
+    ];
   }
 
   return $requirements;
