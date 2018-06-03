@@ -82,35 +82,35 @@ class PotxExtractTranslationForm extends FormBase {
     $languages = $this->languageManager->getLanguages();
     if (count($languages) > 1 || !isset($languages['en'])) {
       // We have more languages, or the single language we have is not English.
-      $options = array('n/a' => $this->t('Language independent template'));
+      $options = ['n/a' => $this->t('Language independent template')];
       foreach ($languages as $langcode => $language) {
         // Skip English, as we should not have translations for this language.
         if ($langcode == 'en') {
           continue;
         }
 
-        $options[$langcode] = $this->t('Template file for @langname translations', array('@langname' => $this->t($language->getName())));
+        $options[$langcode] = $this->t('Template file for @langname translations', ['@langname' => $language->getName()]);
       }
-      $form['langcode'] = array(
+      $form['langcode'] = [
         '#type' => 'radios',
         '#title' => $this->t('Template language'),
         '#default_value' => 'n/a',
         '#options' => $options,
         '#description' => $this->t('Export a language independent or language dependent (plural forms, language team name, etc.) template.'),
-      );
-      $form['translations'] = array(
+      ];
+      $form['translations'] = [
         '#type' => 'checkbox',
         '#title' => $this->t('Include translations'),
         '#description' => $this->t('Include translations of strings in the file generated. Not applicable for language independent templates.'),
-      );
+      ];
     }
 
-    $form['actions'] = array('#type' => 'actions');
-    $form['actions']['submit'] = array(
+    $form['actions'] = ['#type' => 'actions'];
+    $form['actions']['submit'] = [
       '#type' => 'submit',
       '#button_type' => 'primary',
       '#value' => $this->t('Extract'),
-    );
+    ];
 
     return $form;
   }
@@ -142,7 +142,7 @@ class PotxExtractTranslationForm extends FormBase {
     // - modules/watchdog
     // - sites/all/modules/coder
     // - sites/all/modules/i18n/i18n.module
-    // - themes/garland
+    // - themes/garland.
     $component = $form_state->getValue('component');
     $pathinfo = pathinfo($component);
     if (!isset($pathinfo['filename'])) {
@@ -209,7 +209,7 @@ class PotxExtractTranslationForm extends FormBase {
    */
   private function generateComponentList() {
 
-    $components = array();
+    $components = [];
 
     // Get a list of all enabled modules and themes.
     $modules = $this->moduleHandler->getModuleList();
@@ -222,7 +222,7 @@ class PotxExtractTranslationForm extends FormBase {
       $dir =& $components;
       foreach ($path_parts as $dirname) {
         if (!isset($dir[$dirname])) {
-          $dir[$dirname] = array();
+          $dir[$dirname] = [];
         }
         $dir =& $dir[$dirname];
       }
@@ -263,37 +263,37 @@ class PotxExtractTranslationForm extends FormBase {
     if (isset($component_count) && (count($components) == 1)) {
       $component = array_shift($components);
       $dirname = $component->getPath();
-      $form[$this->getFormElementId('dir', $dirname)] = array(
+      $form[$this->getFormElementId('dir', $dirname)] = [
         '#type' => 'radio',
-        '#title' => t('Extract from %name in the %directory directory', array('%directory' => $dirname, '%name' => $component->getName())),
+        '#title' => t('Extract from %name in the %directory directory', ['%directory' => $dirname, '%name' => $component->getName()]),
         '#description' => t('Generates output from all files found in this directory.'),
         '#default_value' => 0,
         '#return_value' => $dirname,
         // Get all radio buttons into the same group.
-        '#parents' => array('component'),
-      );
+        '#parents' => ['component'],
+      ];
       return;
     }
 
     // A directory with multiple components in it.
     if (preg_match('!/(modules|themes)\\b(/.+)?!', $dirname, $pathmatch)) {
-      $t_args = array('@directory' => substr($dirname, 1));
+      $t_args = ['@directory' => substr($dirname, 1)];
       if (isset($pathmatch[2])) {
-        $form[$this->getFormElementId('dir', $dirname)] = array(
+        $form[$this->getFormElementId('dir', $dirname)] = [
           '#type' => 'radio',
           '#title' => t('Extract from all in directory "@directory"', $t_args),
           '#description' => t('To extract from a single component in this directory, choose the desired entry in the fieldset below.'),
           '#default_value' => 0,
           '#return_value' => substr($dirname, 1),
           // Get all radio buttons into the same group.
-          '#parents' => array('component'),
-        );
+          '#parents' => ['component'],
+        ];
       }
-      $element = array(
+      $element = [
         '#type' => 'details',
         '#title' => t('Directory "@directory"', $t_args),
         '#open' => FALSE,
-      );
+      ];
       $form[$this->getFormElementId('fs', $dirname)] =& $element;
     }
     else {
@@ -304,20 +304,20 @@ class PotxExtractTranslationForm extends FormBase {
       // A component in this directory with multiple components.
       if ($entry[0] == '#') {
         // Component entry.
-        $t_args = array(
+        $t_args = [
           '%directory' => $components[$entry]->getPath(),
           '%name'      => $components[$entry]->getName(),
           '%pattern'   => $components[$entry]->getName() . '.*',
-        );
-        $element[$this->getFormElementId('com', $components[$entry]->getExtensionFilename())] = array(
+        ];
+        $element[$this->getFormElementId('com', $components[$entry]->getExtensionFilename())] = [
           '#type' => 'radio',
           '#title' => $this->t('Extract from %name', $t_args),
           '#description' => $this->t('Extract from files named %pattern in the %directory directory.', $t_args),
           '#default_value' => 0,
           '#return_value' => $components[$entry]->getExtensionPathname(),
           // Get all radio buttons into the same group.
-          '#parents' => array('component'),
-        );
+          '#parents' => ['component'],
+        ];
       }
       // A subdirectory we need to look into.
       else {

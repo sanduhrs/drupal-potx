@@ -1,4 +1,5 @@
 <?php
+
 namespace Drupal\potx\Commands;
 
 use Drush\Commands\DrushCommands;
@@ -16,10 +17,14 @@ class PotxCommands extends DrushCommands {
   /**
    * Extract translatable strings from Drupal source code.
    *
+   * @param string $mode
+   *   The output mode e.g. single multiple core.
+   * @param array $options
+   *   An associative array of options whose values come from cli, aliases,
+   *    config, etc.
+   *
    * @command potx
    *
-   * @param string $mode The output mode e.g. single multiple core.
-   * @param array $options An associative array of options whose values come from cli, aliases, config, etc.
    * @option modules Comma delimited list of modules to extract translatable strings from.
    * @option files Comma delimited list of files to extract translatable strings from.
    * @option folder Folder to begin translation extraction in. When no other option is set this defaults to current directory.
@@ -33,20 +38,26 @@ class PotxCommands extends DrushCommands {
    *   files: Files
    *   strings: Strings
    *   warnings: Warnings
+   *
    * @return \Consolidation\OutputFormatters\StructuredData\RowsOfFields
+   *   The number of files, strings, and errors processed, in a table format.
    */
-  public function potx($mode = NULL, array $options = ['modules' => null, 'files' => null, 'folder' => null, 'api' => null])
-  {
+  public function potx($mode = NULL, array $options = [
+    'modules' => NULL,
+    'files' => NULL,
+    'folder' => NULL,
+    'api' => NULL,
+  ]) {
     // Include library.
     include_once __DIR__ . '/../../potx.inc';
     include_once __DIR__ . '/../../potx.local.inc';
 
-    $files = array();
+    $files = [];
     $build_mode = POTX_BUILD_SINGLE;
 
-    if (!is_null($mode) && in_array($mode, array('core', 'multiple', 'single'))) {
+    if (!is_null($mode) && in_array($mode, ['core', 'multiple', 'single'])) {
       // First argument could be any of the mode names.
-      $build_mode = constant('POTX_BUILD_'. strtoupper($mode));
+      $build_mode = constant('POTX_BUILD_' . strtoupper($mode));
     }
     // Silence error message reporting. Messages will be reported by at the end.
     potx_status('set', POTX_STATUS_SILENT);
@@ -56,7 +67,7 @@ class PotxCommands extends DrushCommands {
     $files_option = $options['files'];
     $folder_option = $options['folder'];
     $api_option = $options['api'];
-    if (empty($api_option) || !in_array($api_option, array(5, 6, 7, 8))) {
+    if (empty($api_option) || !in_array($api_option, [5, 6, 7, 8])) {
       $api_option = POTX_API_CURRENT;
     }
 
@@ -95,12 +106,12 @@ class PotxCommands extends DrushCommands {
     // Get errors, if any.
     $errors = potx_status('get');
     // Get saved strings.
-    $strings = _potx_save_string(NULL,  NULL, NULL, 0, POTX_STRING_RUNTIME);
-    $rows[] = array(
+    $strings = _potx_save_string(NULL, NULL, NULL, 0, POTX_STRING_RUNTIME);
+    $rows[] = [
       'files' => count($files),
       'strings' => count($strings),
-      'errors' => count($errors)
-    );
+      'errors' => count($errors),
+    ];
 
     if (!empty($errors)) {
       $this->output()->writeln(dt("Errors"));

@@ -10,7 +10,7 @@
  */
 function _locale_export_string($str) {
   $stri = addcslashes($str, "\0..\37\\\"");
-  $parts = array();
+  $parts = [];
 
   // Cut text into several lines.
   while ($stri != "") {
@@ -46,7 +46,7 @@ function _locale_export_string($str) {
  */
 function _locale_export_wrap($str, $len) {
   $words = explode(' ', $str);
-  $return = array();
+  $return = [];
 
   $cur = "";
   $nstr = 1;
@@ -70,7 +70,7 @@ function _locale_export_wrap($str, $len) {
 }
 
 /**
- * Removes plural index information from a string
+ * Removes plural index information from a string.
  */
 function _locale_export_remove_plural($entry) {
   return preg_replace('/(@count)\[[0-9]\]/', '\\1', $entry);

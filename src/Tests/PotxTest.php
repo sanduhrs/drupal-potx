@@ -11,7 +11,7 @@ use Drupal\simpletest\WebTestBase;
  */
 class PotxTest extends WebTestBase {
 
-  public static $modules = array('locale', 'potx');
+  public static $modules = ['locale', 'potx'];
 
   /**
    * {@inheritdoc}
@@ -19,8 +19,8 @@ class PotxTest extends WebTestBase {
   public function setUp() {
 
     // Add potx.inc which we test for its functionality.
-    include_once(__DIR__ . '/../../potx.inc');
-    include_once(__DIR__ . '/../../potx.local.inc');
+    include_once __DIR__ . '/../../potx.inc';
+    include_once __DIR__ . '/../../potx.local.inc';
     potx_local_init();
     // Store empty error message for reuse in multiple cases.
     $this->empty_error = t('Empty string attempted to be localized. Please do not leave test code for localization in your source.');
@@ -36,48 +36,48 @@ class PotxTest extends WebTestBase {
     $this->parseFile($filename, POTX_API_5);
 
     // Assert strings found in module source code.
-    $this->assertMsgID('Test menu item in 5');
-    $this->assertMsgID('This is a test menu item in 5');
-    $this->assertMsgID('This is a test string.');
-    $this->assertMsgID('test watchdog type');
+    $this->assertMsgId('Test menu item in 5');
+    $this->assertMsgId('This is a test menu item in 5');
+    $this->assertMsgId('This is a test string.');
+    $this->assertMsgId('test watchdog type');
     // No support for instant t() in watchdog.
-    $this->assertNoMsgID('My watchdog message');
-    $this->assertMsgID('test potx permission');
-    $this->assertMsgID('one more test potx permission');
-    $this->assertPluralID('1 test string', '@count test strings');
+    $this->assertNoMsgId('My watchdog message');
+    $this->assertMsgId('test potx permission');
+    $this->assertMsgId('one more test potx permission');
+    $this->assertPluralId('1 test string', '@count test strings');
 
     // Installer string should not appear in runtime output.
-    $this->assertNoMsgID('Installer only test string');
-    $this->assertMsgID('Dynamic callback test string');
-    $this->assertNoMsgID('Installer string in context');
+    $this->assertNoMsgId('Installer only test string');
+    $this->assertMsgId('Dynamic callback test string');
+    $this->assertNoMsgId('Installer string in context');
 
     // No context support yet.
-    $this->assertNoMsgIDContext('Test string in context', 'Test context');
-    $this->assertMsgID('Test string in context');
-    $this->assertNoMsgIDContext('Dynamic string in context', 'Dynamic context');
-    $this->assertMsgID('Dynamic string in context');
+    $this->assertNoMsgIdContext('Test string in context', 'Test context');
+    $this->assertMsgId('Test string in context');
+    $this->assertNoMsgIdContext('Dynamic string in context', 'Dynamic context');
+    $this->assertMsgId('Dynamic string in context');
     // The singular/plural will not even be found without context, because
     // Drupal 5 does not have support for args on format_plural.
-    $this->assertNoMsgID('1 test string in context');
-    $this->assertNoPluralIDContext('1 test string in context', '@count test strings in context', 'Test context');
+    $this->assertNoMsgId('1 test string in context');
+    $this->assertNoPluralIdContext('1 test string in context', '@count test strings in context', 'Test context');
 
     // Look at installer strings.
     $this->parseFile($filename, POTX_API_5, POTX_STRING_INSTALLER);
-    $this->assertMsgID('Installer only test string');
-    $this->assertMsgID('Dynamic callback test string');
-    $this->assertNoMsgID('1 test string');
-    $this->assertNoMsgID('This is a test string.');
-    $this->assertNoMsgIDContext('Installer string in context', 'Installer context');
-    $this->assertMsgID('Installer string in context');
-    $this->assertNoMsgIDContext('Dynamic string in context', 'Dynamic context');
-    $this->assertMsgID('Dynamic string in context');
+    $this->assertMsgId('Installer only test string');
+    $this->assertMsgId('Dynamic callback test string');
+    $this->assertNoMsgId('1 test string');
+    $this->assertNoMsgId('This is a test string.');
+    $this->assertNoMsgIdContext('Installer string in context', 'Installer context');
+    $this->assertMsgId('Installer string in context');
+    $this->assertNoMsgIdContext('Dynamic string in context', 'Dynamic context');
+    $this->assertMsgId('Dynamic string in context');
 
     $this->assert(count($this->potx_status) == 4, '4 error messages found');
     $this->assert($this->potx_status[0][0] == $this->empty_error, 'First empty error found.');
     $this->assert($this->potx_status[1][0] == $this->empty_error, 'Second empty error found.');
-    $this->assert($this->potx_status[2][0] == t('In @function(), the singular and plural strings should be literal strings. There should be no variables, concatenation, constants or even a t() call there.', array(
-      '@function' => 'format_plural'
-    )), 'Fourth error found.');
+    $this->assert($this->potx_status[2][0] == t('In @function(), the singular and plural strings should be literal strings. There should be no variables, concatenation, constants or even a t() call there.', [
+      '@function' => 'format_plural',
+    ]), 'Fourth error found.');
     $this->assert($this->potx_status[3][0] == $this->empty_error, 'Third empty error found.');
   }
 
@@ -90,42 +90,42 @@ class PotxTest extends WebTestBase {
     $this->parseFile($filename, POTX_API_6);
 
     // Assert strings found in module source code.
-    $this->assertMsgID('Test menu item');
-    $this->assertMsgID('This is a test menu item');
-    $this->assertMsgID('This is a test string.');
-    $this->assertMsgID('test watchdog type');
-    $this->assertMsgID('My watchdog message');
-    $this->assertMsgID('test potx permission');
-    $this->assertMsgID('one more test potx permission');
-    $this->assertPluralID('1 test string', '@count test strings');
-    $this->assertMsgID('Test menu item description');
-    $this->assertMsgID('Test menu item description altered (1)');
-    $this->assertMsgID('Test menu item description altered (2)');
-    $this->assertMsgID('Test menu item title altered');
+    $this->assertMsgId('Test menu item');
+    $this->assertMsgId('This is a test menu item');
+    $this->assertMsgId('This is a test string.');
+    $this->assertMsgId('test watchdog type');
+    $this->assertMsgId('My watchdog message');
+    $this->assertMsgId('test potx permission');
+    $this->assertMsgId('one more test potx permission');
+    $this->assertPluralId('1 test string', '@count test strings');
+    $this->assertMsgId('Test menu item description');
+    $this->assertMsgId('Test menu item description altered (1)');
+    $this->assertMsgId('Test menu item description altered (2)');
+    $this->assertMsgId('Test menu item title altered');
 
     // Installer string should not appear in runtime output.
-    $this->assertNoMsgID('Installer only test string');
-    $this->assertMsgID('Dynamic callback test string');
-    $this->assertNoMsgID('Installer string in context');
+    $this->assertNoMsgId('Installer only test string');
+    $this->assertMsgId('Dynamic callback test string');
+    $this->assertNoMsgId('Installer string in context');
 
     // No context support yet.
-    $this->assertNoMsgIDContext('Test string in context', 'Test context');
-    $this->assertMsgID('Test string in context');
-    $this->assertNoMsgIDContext('Dynamic string in context', 'Dynamic context');
-    $this->assertMsgID('Dynamic string in context');
-    $this->assertPluralID('1 test string in context', '@count test strings in context');
-    $this->assertNoPluralIDContext('1 test string in context', '@count test strings in context', 'Test context');
+    $this->assertNoMsgIdContext('Test string in context', 'Test context');
+    $this->assertMsgId('Test string in context');
+    $this->assertNoMsgIdContext('Dynamic string in context', 'Dynamic context');
+    $this->assertMsgId('Dynamic string in context');
+    $this->assertPluralId('1 test string in context', '@count test strings in context');
+    $this->assertNoPluralIdContext('1 test string in context', '@count test strings in context', 'Test context');
 
     // Look at installer strings.
     $this->parseFile($filename, POTX_API_6, POTX_STRING_INSTALLER);
-    $this->assertMsgID('Installer only test string');
-    $this->assertMsgID('Dynamic callback test string');
-    $this->assertNoMsgID('1 test string');
-    $this->assertNoMsgID('This is a test string.');
-    $this->assertNoMsgIDContext('Installer string in context', 'Installer context');
-    $this->assertMsgID('Installer string in context');
-    $this->assertNoMsgIDContext('Dynamic string in context', 'Dynamic context');
-    $this->assertMsgID('Dynamic string in context');
+    $this->assertMsgId('Installer only test string');
+    $this->assertMsgId('Dynamic callback test string');
+    $this->assertNoMsgId('1 test string');
+    $this->assertNoMsgId('This is a test string.');
+    $this->assertNoMsgIdContext('Installer string in context', 'Installer context');
+    $this->assertMsgId('Installer string in context');
+    $this->assertNoMsgIdContext('Dynamic string in context', 'Dynamic context');
+    $this->assertMsgId('Dynamic string in context');
 
     $this->assert(count($this->potx_status) == 3, '3 error messages found');
     $this->assert($this->potx_status[0][0] == $this->empty_error, 'First empty error found.');
@@ -142,55 +142,78 @@ class PotxTest extends WebTestBase {
     $this->parseFile($filename, POTX_API_7);
 
     // Assert strings found in module source code.
-    $this->assertMsgID('Test menu item');
-    $this->assertMsgID('This is a test menu item');
-    $this->assertMsgID('This is a test string.');
-    $this->assertMsgID('test watchdog type');
-    $this->assertMsgID('My watchdog message');
-    $this->assertMsgID('PHP Syntax error gracefully handled');
+    $this->assertMsgId('Test menu item');
+    $this->assertMsgId('This is a test menu item');
+    $this->assertMsgId('This is a test string.');
+    $this->assertMsgId('test watchdog type');
+    $this->assertMsgId('My watchdog message');
 
     // No support for hook_perm() anymore. t() in hook_permissions().
-    $this->assertNoMsgID('test potx permission');
-    $this->assertNoMsgID('one more test potx permission');
-    $this->assertMsgID('Test potx permission');
-    $this->assertMsgID('Test potx permission description');
-    $this->assertMsgID('One more test potx permission');
-    $this->assertMsgID('One more test potx permission description');
+    $this->assertNoMsgId('test potx permission');
+    $this->assertNoMsgId('one more test potx permission');
+    $this->assertMsgId('Test potx permission');
+    $this->assertMsgId('Test potx permission description');
+    $this->assertMsgId('One more test potx permission');
+    $this->assertMsgId('One more test potx permission description');
 
-    $this->assertPluralID('1 test string', '@count test strings');
-    $this->assertPluralIDContext('1 test string in context', '@count test strings in context', 'Test context');
+    $this->assertPluralId('1 test string', '@count test strings');
+    $this->assertPluralIdContext('1 test string in context', '@count test strings in context', 'Test context');
 
-    $this->assertMsgID('Test menu item description');
-    $this->assertMsgID('Test menu item description altered (1)');
-    $this->assertMsgID('Test menu item description altered (2)');
-    $this->assertMsgID('Test menu item title altered');
+    $this->assertMsgId('Test menu item description');
+    $this->assertMsgId('Test menu item description altered (1)');
+    $this->assertMsgId('Test menu item description altered (2)');
+    $this->assertMsgId('Test menu item title altered');
 
-    $this->assertNoMsgID('Installer only test string');
-    $this->assertMsgID('Dynamic callback test string');
-    $this->assertNoMsgIDContext('Installer string in context', 'Installer context');
-    $this->assertMsgIDContext('Dynamic string in context', 'Dynamic context');
+    $this->assertNoMsgId('Installer only test string');
+    $this->assertMsgId('Dynamic callback test string');
+    $this->assertNoMsgIdContext('Installer string in context', 'Installer context');
+    $this->assertMsgIdContext('Dynamic string in context', 'Dynamic context');
 
     // Context support added.
-    $this->assertMsgIDContext('Test string in context', 'Test context');
+    $this->assertMsgIdContext('Test string in context', 'Test context');
 
     // Drush support.
-    $this->assertMsgID('This could have been in a drush file');
+    $this->assertMsgId('This could have been in a drush file');
 
     // Look at installer strings.
     $this->parseFile($filename, POTX_API_7, POTX_STRING_INSTALLER);
-    $this->assertMsgID('Installer only test string');
-    $this->assertMsgID('Dynamic callback test string');
-    $this->assertNoMsgID('1 test string');
-    $this->assertNoMsgID('This is a test string.');
-    $this->assertMsgIDContext('Installer string in context', 'Installer context');
-    $this->assertMsgIDContext('Dynamic string in context', 'Dynamic context');
+    $this->assertMsgId('Installer only test string');
+    $this->assertMsgId('Dynamic callback test string');
+    $this->assertNoMsgId('1 test string');
+    $this->assertNoMsgId('This is a test string.');
+    $this->assertMsgIdContext('Installer string in context', 'Installer context');
+    $this->assertMsgIdContext('Dynamic string in context', 'Dynamic context');
 
-    $this->assert(count($this->potx_status) == 3, '3 error messages found');
+    $this->assert(count($this->potx_status) == 2, '2 error messages found');
     $this->assert($this->potx_status[0][0] == $this->empty_error, 'First empty error found.');
-    $this->assert($this->potx_status[1][0] == t('Unexpected ;'), 'Unexpected semicolon found.');
-    $this->assert($this->potx_status[2][0] == $this->empty_error, 'Second empty error found.');
+    $this->assert($this->potx_status[1][0] == $this->empty_error, 'Second empty error found.');
   }
 
+  /**
+   * Test parsing of Drupal 7 module with a syntax error.
+   */
+  public function testDrupal7WithSyntaxError() {
+    // Parse and build the Drupal 7 module file.
+    $filename = 'potx_test_7_with_error.module';
+    $file_content = "
+<?php
+
+function potx_test_7_with_syntax_error() {
+  t('Oh god why would @you omit a parenthesis?', array('@you' => 'fool');
+  t('PHP Syntax error gracefully handled');
+}
+    ";
+
+    $this->parsePhpContent($file_content, $filename, POTX_API_7);
+
+    $this->assert(count($this->potx_status) == 1, '1 error messages found');
+    $this->assert($this->potx_status[0][0] == t('Unexpected ;'), 'Unexpected semicolon found.');
+    $this->assertMsgId('PHP Syntax error gracefully handled');
+  }
+
+  /**
+   * Test parsing of the special DrupalManager class in Drupal 8 core.
+   */
   public function testDrupal8LanguageManager() {
     $filename = 'LanguageManager.php';
     $file_content = "
@@ -215,9 +238,9 @@ class PotxMockLanguageManager {
 }
     ";
 
-    $this->parsePHPContent($file_content, $filename, POTX_API_8);
+    $this->parsePhpContent($file_content, $filename, POTX_API_8);
 
-    $this->assertMsgID('Test English language');
+    $this->assertMsgId('Test English language');
   }
 
   /**
@@ -227,38 +250,38 @@ class PotxMockLanguageManager {
     $filename = $this->tests_root . '/potx_test_8.html.twig';
     $this->parseFile($filename, POTX_API_8);
 
-    $this->assertMsgID('This is a translated string.');
-    $this->assertMsgID('A double-quoted string');
-    $this->assertMsgID('Here\'s a double-quoted "and escaped" string.');
-    $this->assertMsgID("Here's a string with an escaped quote.");
+    $this->assertMsgId('This is a translated string.');
+    $this->assertMsgId('A double-quoted string');
+    $this->assertMsgId('Here\'s a double-quoted "and escaped" string.');
+    $this->assertMsgId("Here's a string with an escaped quote.");
 
-    $this->assertNoMsgID('This is a concatenated string that should not be picked up.');
-    $this->assertNoMsgID('This is a concatenated string ');
-    $this->assertNoMsgID('that should not be picked up.');
-    $this->assertNoMsgID('This is an untranslated string.');
+    $this->assertNoMsgId('This is a concatenated string that should not be picked up.');
+    $this->assertNoMsgId('This is a concatenated string ');
+    $this->assertNoMsgId('that should not be picked up.');
+    $this->assertNoMsgId('This is an untranslated string.');
 
     $this->assert(count($this->potx_status) == 1, '1 error message found');
     $this->assert($this->potx_status[0][0] == t('Uses of the t filter in Twig templates should start with a single literal string, and should not be chained.'), 'Concatenation error found.');
 
-    $this->assertMsgID('Hello sun.');
-    $this->assertMsgIDContext('Hello sun, with context.', 'Lolspeak');
-    $this->assertMsgID('Hello Earth.');
-    $this->assertMsgID('Hello moon.');
-    $this->assertPluralID('Hello star.', 'Hello @count stars.');
+    $this->assertMsgId('Hello sun.');
+    $this->assertMsgIdContext('Hello sun, with context.', 'Lolspeak');
+    $this->assertMsgId('Hello Earth.');
+    $this->assertMsgId('Hello moon.');
+    $this->assertPluralId('Hello star.', 'Hello @count stars.');
 
-    $this->assertMsgID('Escaped: @string');
-    $this->assertMsgID('Placeholder: %string');
+    $this->assertMsgId('Escaped: @string');
+    $this->assertMsgId('Placeholder: %string');
 
-    $this->assertMsgID('This @node.type is submitted by @author.name, and has a length of: @count. It contains: %node.numbers and @node.bad_text.');
+    $this->assertMsgId('This @node.type is submitted by @author.name, and has a length of: @count. It contains: %node.numbers and @node.bad_text.');
 
-    $this->assertMsgIDContext('I have context.', 'Lolspeak');
-    $this->assertNoMsgIDContext('I have no context.', 'zz');
-    $this->assertMsgIDContext('I have context and another parameter.', 'Lolspeak');
+    $this->assertMsgIdContext('I have context.', 'Lolspeak');
+    $this->assertNoMsgIdContext('I have no context.', 'zz');
+    $this->assertMsgIdContext('I have context and another parameter.', 'Lolspeak');
 
-    $this->assertMsgID('A multiline\n    trans block.');
-    $this->assertMsgID('Test string with @extra_filter');
-    $this->assertMsgID('Test string with @multiple_filters');
-    $this->assertMsgID('Test string with %multiple_filters');
+    $this->assertMsgId('A multiline\n    trans block.');
+    $this->assertMsgId('Test string with @extra_filter');
+    $this->assertMsgId('Test string with @multiple_filters');
+    $this->assertMsgId('Test string with %multiple_filters');
   }
 
   /**
@@ -269,58 +292,58 @@ class PotxMockLanguageManager {
     $filename = $this->tests_root . '/potx_test_8.module.txt';
     $this->parseFile($filename, POTX_API_8);
 
-    // Test parsing $this->t calls in D8 code
-    $this->assertMsgID('Using t inside D8 classes ($this->t)');
+    // Test parsing $this->t calls in D8 code.
+    $this->assertMsgId('Using t inside D8 classes ($this->t)');
 
     // Assert strings found in module source code.
-    $this->assertMsgID('Good translation annotation');
-    $this->assertMsgID('Another good translation annotation');
-    $this->assertMsgID('Final good translation annotation');
+    $this->assertMsgId('Good translation annotation');
+    $this->assertMsgId('Another good translation annotation');
+    $this->assertMsgId('Final good translation annotation');
 
-    $this->assertNoMsgIDContext('Good translation annotation', 'Translation test');
+    $this->assertNoMsgIdContext('Good translation annotation', 'Translation test');
 
-    $this->assertMsgID('Translation in good context');
-    $this->assertMsgIDContext('Translation in good context', 'Translation test');
+    $this->assertMsgId('Translation in good context');
+    $this->assertMsgIdContext('Translation in good context', 'Translation test');
 
     $this->assert(count($this->potx_status) == 2, '2 error messages found');
     $this->assert($this->potx_status[0][0] == t('In @Translation, only one, non-empty static string is allowed in double quotes.'), 'Incorrect @Translation found.');
     $this->assert($this->potx_status[1][0] == $this->empty_error, 'Second empty error found.');
 
-    $this->assertPluralID('1 formatPlural test string', '@count formatPlural test strings');
-    $this->assertPluralIDContext('1 formatPlural test string in context', '@count formatPlural test strings in context', 'Test context');
+    $this->assertPluralId('1 formatPlural test string', '@count formatPlural test strings');
+    $this->assertPluralIdContext('1 formatPlural test string in context', '@count formatPlural test strings in context', 'Test context');
 
-    $this->assertPluralID('1 translation->formatPlural test string', '@count translation->formatPlural test strings');
-    $this->assertPluralIDContext('1 translation->formatPlural test string in context', '@count translation->formatPlural test strings in context', 'Test context');
+    $this->assertPluralId('1 translation->formatPlural test string', '@count translation->formatPlural test strings');
+    $this->assertPluralIdContext('1 translation->formatPlural test string in context', '@count translation->formatPlural test strings in context', 'Test context');
 
-    $this->assertPluralID('1 PluralTranslatableMarkup test string', '@count PluralTranslatableMarkup test strings');
-    $this->assertPluralIDContext('1 PluralTranslatableMarkup test string with context', '@count PluralTranslatableMarkup test strings with context', 'Test context');
+    $this->assertPluralId('1 PluralTranslatableMarkup test string', '@count PluralTranslatableMarkup test strings');
+    $this->assertPluralIdContext('1 PluralTranslatableMarkup test string with context', '@count PluralTranslatableMarkup test strings with context', 'Test context');
 
-    $this->assertMsgID('TranslationWrapper string');
-    $this->assertMsgIDContext('TranslationWrapper string with context', 'With context');
+    $this->assertMsgId('TranslationWrapper string');
+    $this->assertMsgIdContext('TranslationWrapper string with context', 'With context');
 
-    $this->assertMsgID('TranslatableMarkup string');
-    $this->assertMsgID('TranslatableMarkup string without context');
-    $this->assertMsgIDContext('TranslatableMarkup string with long array context', 'With context');
-    $this->assertMsgIDContext('TranslatableMarkup string with short array context', 'With context');
-    $this->assertMsgIDContext('TranslatableMarkup string with long array followed by short array context', 'With context');
-    $this->assertMsgIDContext('TranslatableMarkup string with complicated tokens', 'With context');
-    $this->assertMsgIDContext('TranslatableMarkup string with complicated option tokens', 'With context');
+    $this->assertMsgId('TranslatableMarkup string');
+    $this->assertMsgId('TranslatableMarkup string without context');
+    $this->assertMsgIdContext('TranslatableMarkup string with long array context', 'With context');
+    $this->assertMsgIdContext('TranslatableMarkup string with short array context', 'With context');
+    $this->assertMsgIdContext('TranslatableMarkup string with long array followed by short array context', 'With context');
+    $this->assertMsgIdContext('TranslatableMarkup string with complicated tokens', 'With context');
+    $this->assertMsgIdContext('TranslatableMarkup string with complicated option tokens', 'With context');
 
-    $this->assertMsgID('Test translatable string inside an inline template');
-    $this->assertMsgID('Another test translatable string inside an inline template');
-    $this->assertMsgID('A translatable string inside an inline template, with double-quoted "#template" key');
+    $this->assertMsgId('Test translatable string inside an inline template');
+    $this->assertMsgId('Another test translatable string inside an inline template');
+    $this->assertMsgId('A translatable string inside an inline template, with double-quoted "#template" key');
 
-    $this->assertMsgID('Debug message');
-    $this->assertMsgID('Info message');
-    $this->assertMsgID('Notice message');
-    $this->assertMsgID('Warning message');
-    $this->assertMsgID('Error message');
-    $this->assertMsgID('Critical message');
-    $this->assertMsgID('Alert message');
-    $this->assertMsgID('Emergency message');
-    $this->assertMsgID('Log message');
-    $this->assertMsgID('Log message 2');
-    $this->assertMsgID('Log message 3');
+    $this->assertMsgId('Debug message');
+    $this->assertMsgId('Info message');
+    $this->assertMsgId('Notice message');
+    $this->assertMsgId('Warning message');
+    $this->assertMsgId('Error message');
+    $this->assertMsgId('Critical message');
+    $this->assertMsgId('Alert message');
+    $this->assertMsgId('Emergency message');
+    $this->assertMsgId('Log message');
+    $this->assertMsgId('Log message 2');
+    $this->assertMsgId('Log message 3');
   }
 
   /**
@@ -331,9 +354,9 @@ class PotxMockLanguageManager {
     $this->parseFile($filename, POTX_API_8);
 
     // Look for name, description and package name extracted.
-    $this->assertMsgID('Translation template extractor tester');
-    $this->assertMsgID('Test description');
-    $this->assertMsgID('Test package');
+    $this->assertMsgId('Translation template extractor tester');
+    $this->assertMsgId('Test description');
+    $this->assertMsgId('Test package');
   }
 
   /**
@@ -343,36 +366,36 @@ class PotxMockLanguageManager {
     $filename = $this->tests_root . '/potx_test_8.routing.yml';
     $this->parseFile($filename, POTX_API_8);
 
-    // Look for all title can be extracted
-    $this->assertMsgID('Build translation test');
-    $this->assertMsgID('Build alternative translation');
-    $this->assertMsgIDContext('Translation title in context', 'Title context');
+    // Look for all title can be extracted.
+    $this->assertMsgId('Build translation test');
+    $this->assertMsgId('Build alternative translation');
+    $this->assertMsgIdContext('Translation title in context', 'Title context');
   }
 
   /**
    * Test parsing of Drupal 8 local tasks, contextual link and action files.
    */
   public function testDrupal8LocalContextualYml() {
-    $filenames = array(
+    $filenames = [
       $this->tests_root . '/potx_test_8.links.task.yml',
       $this->tests_root . '/potx_test_8.links.action.yml',
-      $this->tests_root . '/potx_test_8.links.contextual.yml'
-    );
+      $this->tests_root . '/potx_test_8.links.contextual.yml',
+    ];
 
     $this->parseFile($filenames[0], POTX_API_8);
 
-    $this->assertMsgID('Local task translation test');
-    $this->assertMsgIDContext('Local task translation with context test', 'Local task context');
+    $this->assertMsgId('Local task translation test');
+    $this->assertMsgIdContext('Local task translation with context test', 'Local task context');
 
     $this->parseFile($filenames[1], POTX_API_8);
 
-    $this->assertMsgID('Local action translation test');
-    $this->assertMsgIDContext('Local action translation with context test', 'Local action context');
+    $this->assertMsgId('Local action translation test');
+    $this->assertMsgIdContext('Local action translation with context test', 'Local action context');
 
     $this->parseFile($filenames[2], POTX_API_8);
 
-    $this->assertMsgID('Test Contextual link');
-    $this->assertMsgIDContext('Test Contextual link with context', 'Contextual Context');
+    $this->assertMsgId('Test Contextual link');
+    $this->assertMsgIdContext('Test Contextual link with context', 'Contextual Context');
   }
 
   /**
@@ -380,9 +403,9 @@ class PotxMockLanguageManager {
    */
   public function testDrupal8MenuLinksYml() {
     $this->parseFile($this->tests_root . '/potx_test_8.links.menu.yml', POTX_API_8);
-    $this->assertMsgID('Test menu link title');
-    $this->assertMsgID('Test menu link description.');
-    $this->assertMsgIDContext('Test menu link title with context', 'Menu item context');
+    $this->assertMsgId('Test menu link title');
+    $this->assertMsgId('Test menu link description.');
+    $this->assertMsgIdContext('Test menu link title with context', 'Menu item context');
   }
 
   /**
@@ -392,20 +415,20 @@ class PotxMockLanguageManager {
     $files = _potx_explore_dir($this->tests_root . '/potx_test_8/', '*', POTX_API_8);
     _potx_init_yaml_translation_patterns();
     $this->parseFile($files[0], POTX_API_8);
-    $this->assertMsgID('Test custom yaml translatable');
-    $this->assertMsgIDContext('Test custom yaml translatable with context', 'Yaml translatable context');
+    $this->assertMsgId('Test custom yaml translatable');
+    $this->assertMsgIdContext('Test custom yaml translatable with context', 'Yaml translatable context');
 
     // Test that translation patterns for a module won't be used for extracting
     // translatable strings for another module.
     potx_finish_processing('_potx_save_string', POTX_API_8);
     $files = _potx_explore_dir($this->tests_root . '/potx_test_yml/', '*', POTX_API_8);
     $this->parseFile($this->tests_root . '/potx_test_yml/potx_test_8.test2.yml', POTX_API_8);
-    $this->assertNoMsgID('Not translatable string');
-    $this->assertMsgID('Translatable string');
-    $this->assertMsgIDContext('Test custom yaml translatable field with context', 'Yaml translatable context');
+    $this->assertNoMsgId('Not translatable string');
+    $this->assertMsgId('Translatable string');
+    $this->assertMsgIdContext('Test custom yaml translatable field with context', 'Yaml translatable context');
     // Test that custom translation patterns are extracted from subfolders.
     $this->parseFile($this->tests_root . '/potx_test_yml/test_folder/potx_test_8.test3.yml', POTX_API_8);
-    $this->assertMsgID('Translatable string inside directory');
+    $this->assertMsgId('Translatable string inside directory');
   }
 
   /**
@@ -414,9 +437,9 @@ class PotxMockLanguageManager {
   public function testDrupal8BreakpointsYml() {
     $filename = $this->tests_root . '/potx_test_8.breakpoints.yml';
     $this->parseFile($filename, POTX_API_8);
-    $this->assertMsgID('Mobile');
-    $this->assertMsgID('Standard');
-    $this->assertMsgID('Some breakpoint group');
+    $this->assertMsgId('Mobile');
+    $this->assertMsgId('Standard');
+    $this->assertMsgId('Some breakpoint group');
   }
 
   /**
@@ -424,10 +447,10 @@ class PotxMockLanguageManager {
    */
   public function testDrupal8PermissionsYml() {
     $this->parseFile($this->tests_root . '/potx_test_8.permissions.yml', POTX_API_8);
-    $this->assertMsgID('Title potx_test_8_a');
-    $this->assertMsgID('Description: potx_test_8_a');
-    $this->assertMsgID('Title potx_test_8_b');
-    $this->assertNoMsgID('some_callback');
+    $this->assertMsgId('Title potx_test_8_a');
+    $this->assertMsgId('Description: potx_test_8_a');
+    $this->assertMsgId('Title potx_test_8_b');
+    $this->assertNoMsgId('some_callback');
   }
 
   /**
@@ -436,7 +459,7 @@ class PotxMockLanguageManager {
   public function testDrupal8ShippedConfiguration() {
 
     global $_potx_store, $_potx_strings, $_potx_install;
-    $_potx_store = $_potx_strings = $_potx_install = array();
+    $_potx_store = $_potx_strings = $_potx_install = [];
     $test_d8_path = $this->tests_root . '/drupal8';
 
     $files = _potx_explore_dir($test_d8_path, '*', POTX_API_8, TRUE);
@@ -450,63 +473,61 @@ class PotxMockLanguageManager {
     $this->buildOutput(POTX_API_8);
 
     for ($i = 1; $i < 8; $i++) {
-      $this->assertNoMsgID($i . '');
+      $this->assertNoMsgId($i . '');
     }
 
     // Test extraction of config schema labels.
-
     // Make sure all the 'label' strings are extracted.
-    $this->assertMsgID('Test integer');
-    $this->assertMsgID('Test string with "quotes"');
-    $this->assertMsgID('Mapping integer');
-    $this->assertMsgID('Test string in sequence');
+    $this->assertMsgId('Test integer');
+    $this->assertMsgId('Test string with "quotes"');
+    $this->assertMsgId('Mapping integer');
+    $this->assertMsgId('Test string in sequence');
 
     // Make sure other strings are not extracted.
-    $this->assertNoMsgID('mapping');
-    $this->assertNoMsgID('sequence');
+    $this->assertNoMsgId('mapping');
+    $this->assertNoMsgId('sequence');
 
     // Test extraction of shipped config translatables.
+    $this->assertMsgId('A string with "translatable: true" property');
+    $this->assertMsgIdContext('Y-m-d', 'PHP date format');
+    $this->assertMsgIdContext('Test string with context', 'Test context');
+    $this->assertMsgIdContext('Test label with context', 'Test label with context');
+    $this->assertMsgIdContext('Test overriding context', 'Test context override');
+    $this->assertMsgId('Simple mapping name');
+    $this->assertMsgId('Simple mapping code');
+    $this->assertMsgId('Mapping with type - name');
+    $this->assertMsgId('Mapping with type - code');
+    $this->assertMsgId('Mapping with type - extra label');
+    $this->assertMsgId('Simple sequence - Item 1');
+    $this->assertMsgId('Simple sequence - Item 2');
+    $this->assertMsgId('Typed sequence - Item 1 name');
+    $this->assertMsgId('Typed sequence - Item 1 code');
+    $this->assertMsgId('Typed sequence - Item 2 name');
+    $this->assertMsgId('Typed sequence - Item 2 code');
+    $this->assertMsgId('Sequence of sequence - Description 1');
+    $this->assertMsgId('Sequence of sequence - Description 2');
+    $this->assertMsgId('BC sequence item 1');
+    $this->assertMsgId('BC sequence item 2');
+    $this->assertMsgId('Basic variable (text)');
+    $this->assertMsgId('Parent variable (text)');
+    $this->assertMsgId('Key variable (text)');
+    $this->assertMsgId('Complex variable test');
 
-    $this->assertMsgID('A string with "translatable: true" property');
-    $this->assertMsgIDContext('Y-m-d', 'PHP date format');
-    $this->assertMsgIDContext('Test string with context', 'Test context');
-    $this->assertMsgIDContext('Test label with context', 'Test label with context');
-    $this->assertMsgIDContext('Test overriding context', 'Test context override');
-    $this->assertMsgID('Simple mapping name');
-    $this->assertMsgID('Simple mapping code');
-    $this->assertMsgID('Mapping with type - name');
-    $this->assertMsgID('Mapping with type - code');
-    $this->assertMsgID('Mapping with type - extra label');
-    $this->assertMsgID('Simple sequence - Item 1');
-    $this->assertMsgID('Simple sequence - Item 2');
-    $this->assertMsgID('Typed sequence - Item 1 name');
-    $this->assertMsgID('Typed sequence - Item 1 code');
-    $this->assertMsgID('Typed sequence - Item 2 name');
-    $this->assertMsgID('Typed sequence - Item 2 code');
-    $this->assertMsgID('Sequence of sequence - Description 1');
-    $this->assertMsgID('Sequence of sequence - Description 2');
-    $this->assertMsgID('BC sequence item 1');
-    $this->assertMsgID('BC sequence item 2');
-    $this->assertMsgID('Basic variable (text)');
-    $this->assertMsgID('Parent variable (text)');
-    $this->assertMsgID('Key variable (text)');
-    $this->assertMsgID('Complex variable test');
+    $this->assertMsgId('Optional config translatable string');
+    $this->assertMsgIdContext('Optional config test string with context', 'Test context');
 
-    $this->assertMsgID('Optional config translatable string');
-    $this->assertMsgIDContext('Optional config test string with context', 'Test context');
+    $this->assertNoMsgId('A simple string');
+    $this->assertNoMsgId('A text with "translatable: false" property');
+    $this->assertNoMsgId('text');
+    $this->assertNoMsgId('custom');
+    $this->assertNoMsgId('Basic variable (custom)');
+    $this->assertNoMsgId('Parent variable (custom)');
+    $this->assertNoMsgId('Key variable (custom)');
 
-    $this->assertNoMsgID('A simple string');
-    $this->assertNoMsgID('A text with "translatable: false" property');
-    $this->assertNoMsgID('text');
-    $this->assertNoMsgID('custom');
-    $this->assertNoMsgID('Basic variable (custom)');
-    $this->assertNoMsgID('Parent variable (custom)');
-    $this->assertNoMsgID('Key variable (custom)');
+    $this->assertPluralId('1 place', '@count places');
+    $this->assertPluralId('1 comment', '@count comments', 'Test context');
 
-    $this->assertPluralID('1 place', '@count places');
-    $this->assertPluralID('1 comment', '@count comments', 'Test context');
-
-    $this->assertMsgID('Test boolean based variable');
+    $this->assertMsgId('Test boolean based variable');
   }
 
   /**
@@ -525,12 +546,12 @@ class TestConstraint {
 }
     ";
 
-    $this->parsePHPContent($file_content, $filename, POTX_API_8);
+    $this->parsePhpContent($file_content, $filename, POTX_API_8);
 
-    $this->assertMsgID('Test message');
-    $this->assertMsgID('Test message 2');
-    $this->assertPluralID('1 test message', '@count test message');
-    $this->assertNoMsgID('Not a message for translation');
+    $this->assertMsgId('Test message');
+    $this->assertMsgId('Test message 2');
+    $this->assertPluralId('1 test message', '@count test message');
+    $this->assertNoMsgId('Not a message for translation');
   }
 
   /**
@@ -542,29 +563,29 @@ class TestConstraint {
     $this->parseFile($filename, POTX_API_6);
 
     // Look for name, description and package name extracted.
-    $this->assertMsgID('Translation template extractor tester');
-    $this->assertMsgID('Test description');
-    $this->assertMsgID('Test package');
+    $this->assertMsgId('Translation template extractor tester');
+    $this->assertMsgId('Test description');
+    $this->assertMsgId('Test package');
   }
 
   /**
    * Test parsing of a Drupal JS file.
    */
-  public function testDrupalJS() {
+  public function testDrupalJs() {
     // Parse and build the Drupal JS file (from above Drupal 5).
     $filename = $this->tests_root . '/potx_test.js';
     $this->parseFile($filename, POTX_API_6);
 
     // Assert strings found in JS source code.
-    $this->assertMsgID('Test string in JS');
-    $this->assertPluralID('1 test string in JS', '@count test strings in JS');
-    $this->assertMsgID('String with @placeholder value');
-    $this->assertMsgIDContext('Test string in JS in test context', 'Test context');
-    $this->assertMsgIDContext('Test string in JS in context and with @placeholder', 'Test context');
-    $this->assertMsgIDContext('Multiline string for the test with @placeholder', 'Test context');
+    $this->assertMsgId('Test string in JS');
+    $this->assertPluralId('1 test string in JS', '@count test strings in JS');
+    $this->assertMsgId('String with @placeholder value');
+    $this->assertMsgIdContext('Test string in JS in test context', 'Test context');
+    $this->assertMsgIdContext('Test string in JS in context and with @placeholder', 'Test context');
+    $this->assertMsgIdContext('Multiline string for the test with @placeholder', 'Test context');
 
-    $this->assertPluralIDContext('1 test string in JS in test context', '@count test strings in JS in test context', 'Test context');
-    $this->assertPluralIDContext('1 test string in JS with context and @placeholder', '@count test strings in JS with context and @placeholder', 'Test context');
+    $this->assertPluralIdContext('1 test string in JS in test context', '@count test strings in JS in test context', 'Test context');
+    $this->assertPluralIdContext('1 test string in JS with context and @placeholder', '@count test strings in JS with context and @placeholder', 'Test context');
 
     $this->assert(count($this->potx_status) == 1, '1 error message found');
     $this->assert($this->potx_status[0][0] == $this->empty_error, 'Empty error found.');
@@ -575,7 +596,7 @@ class TestConstraint {
    */
   private function parseFile($filename, $api_version, $string_mode = POTX_STRING_RUNTIME) {
     global $_potx_store, $_potx_strings, $_potx_install;
-    $_potx_store = $_potx_strings = $_potx_install = array();
+    $_potx_store = $_potx_strings = $_potx_install = [];
 
     potx_status('set', POTX_STATUS_STRUCTURED);
     _potx_process_file($filename, 0, '_potx_save_string', '_potx_save_version', $api_version);
@@ -585,17 +606,17 @@ class TestConstraint {
     ob_start();
     _potx_write_files('potx-test.po');
     $this->potx_output = ob_get_clean();
-    //debug(var_export($this->potx_output, TRUE));
+    // debug(var_export($this->potx_output, TRUE));.
     $this->potx_status = potx_status('get', TRUE);
-    //debug(var_export($this->potx_status, TRUE));
+    // debug(var_export($this->potx_status, TRUE));.
   }
 
   /**
    * Parse the given file with the given API version.
    */
-  private function parsePHPContent($code, $filename, $api_version, $string_mode = POTX_STRING_RUNTIME) {
+  private function parsePhpContent($code, $filename, $api_version, $string_mode = POTX_STRING_RUNTIME) {
     global $_potx_store, $_potx_strings, $_potx_install;
-    $_potx_store = $_potx_strings = $_potx_install = array();
+    $_potx_store = $_potx_strings = $_potx_install = [];
 
     $basename = basename($filename);
     $name_parts = pathinfo($basename);
@@ -608,9 +629,9 @@ class TestConstraint {
     ob_start();
     _potx_write_files('potx-test.po');
     $this->potx_output = ob_get_clean();
-    //debug(var_export($this->potx_output, TRUE));
+    // debug(var_export($this->potx_output, TRUE));.
     $this->potx_status = potx_status('get', TRUE);
-    //debug(var_export($this->potx_status, TRUE));
+    // debug(var_export($this->potx_status, TRUE));.
   }
 
   /**
@@ -628,73 +649,73 @@ class TestConstraint {
   }
 
   /**
-   * Helper function to assert an msgid construct in the .po file.
+   * Assert a msgid construct in the .po file.
    */
-  private function assertMsgID($string, $message = '', $group = 'Other') {
+  private function assertMsgId($string, $message = '', $group = 'Other') {
     if (!$message) {
-      $message = format_string('MsgID "@raw" found', array('@raw' => $string));
+      $message = format_string('MsgID "@raw" found', ['@raw' => $string]);
     }
-    $this->assert(strpos($this->potx_output, 'msgid "'. _potx_format_quoted_string('"'. $string . '"') .'"') !== FALSE, $message, $group);
+    $this->assert(strpos($this->potx_output, 'msgid "' . _potx_format_quoted_string('"' . $string . '"') . '"') !== FALSE, $message, $group);
   }
 
   /**
-   * Helper function to assert a missing msgid construct in the .po file.
+   * Assert the lack of a msgid construct in the .po file.
    */
-  private function assertNoMsgID($string, $message = '', $group = 'Other') {
+  private function assertNoMsgId($string, $message = '', $group = 'Other') {
     if (!$message) {
-      $message = format_string('MsgID "@raw" not found', array('@raw' => $string));
+      $message = format_string('MsgID "@raw" not found', ['@raw' => $string]);
     }
-    $this->assert(strpos($this->potx_output, 'msgid "'. _potx_format_quoted_string('"'. $string . '"') .'"') === FALSE, $message, $group);
+    $this->assert(strpos($this->potx_output, 'msgid "' . _potx_format_quoted_string('"' . $string . '"') . '"') === FALSE, $message, $group);
   }
 
   /**
-   * Helper function to assert an msgid with context in the .po file.
+   * Assert a msgid with context in the .po file.
    */
-  private function assertMsgIDContext($string, $context, $message = '', $group = 'Other') {
+  private function assertMsgIdContext($string, $context, $message = '', $group = 'Other') {
     if (!$message) {
-      $message = format_string('MsgID "@raw" in context "@context" found', array('@raw' => $string, '@context' => $context));
+      $message = format_string('MsgID "@raw" in context "@context" found', ['@raw' => $string, '@context' => $context]);
     }
-    $this->assert(strpos($this->potx_output, 'msgctxt "'. _potx_format_quoted_string('"'. $context . '"') . "\"\nmsgid \"". _potx_format_quoted_string('"'. $string . '"') .'"') !== FALSE, $message, $group);
+    $this->assert(strpos($this->potx_output, 'msgctxt "' . _potx_format_quoted_string('"' . $context . '"') . "\"\nmsgid \"" . _potx_format_quoted_string('"' . $string . '"') . '"') !== FALSE, $message, $group);
   }
 
   /**
-   * Helper function to assert an msgid with context in the .po file.
+   * Assert the lack of a msgid with context in the .po file.
    */
-  private function assertNoMsgIDContext($string, $context, $message = '', $group = 'Other') {
+  private function assertNoMsgIdContext($string, $context, $message = '', $group = 'Other') {
     if (!$message) {
-      $message = format_string('No MsgID "@raw" in context "@context" found', array('@raw' => $string, '@context' => $context));
+      $message = format_string('No MsgID "@raw" in context "@context" found', ['@raw' => $string, '@context' => $context]);
     }
-    $this->assert(strpos($this->potx_output, 'msgid "'. _potx_format_quoted_string('"'. $string . '"') .'"'. "\nmsgctxt \"". _potx_format_quoted_string('"'. $context . '"') . '"') === FALSE, $message, $group);
+    $this->assert(strpos($this->potx_output, 'msgid "' . _potx_format_quoted_string('"' . $string . '"') . '"' . "\nmsgctxt \"" . _potx_format_quoted_string('"' . $context . '"') . '"') === FALSE, $message, $group);
   }
 
   /**
-   * Helper function to assert an msgid_plural construct in the .po file.
+   * Assert a msgid_plural construct in the .po file.
    */
-  private function assertPluralID($string, $plural, $message = '', $group = 'Other') {
+  private function assertPluralId($string, $plural, $message = '', $group = 'Other') {
     if (!$message) {
-      $message = format_string('Plural ID "@raw" found', array('@raw' => $string));
+      $message = format_string('Plural ID "@raw" found', ['@raw' => $string]);
     }
-    $this->assert(strpos($this->potx_output, 'msgid "'. _potx_format_quoted_string('"'. $string . '"') ."\"\nmsgid_plural \"". _potx_format_quoted_string('"'. $plural . '"') .'"') !== FALSE, $message, $group);
+    $this->assert(strpos($this->potx_output, 'msgid "' . _potx_format_quoted_string('"' . $string . '"') . "\"\nmsgid_plural \"" . _potx_format_quoted_string('"' . $plural . '"') . '"') !== FALSE, $message, $group);
   }
 
   /**
-   * Helper function to assert an msgid_plural with context in the .po file.
+   * Assert a msgid_plural with context in the .po file.
    */
-  private function assertPluralIDContext($string, $plural, $context, $message = '', $group = 'Other') {
+  private function assertPluralIdContext($string, $plural, $context, $message = '', $group = 'Other') {
     if (!$message) {
-      $message = format_string('Plural ID "@raw" found with context "@context"', array('@raw' => $string, '@context' => $context));
+      $message = format_string('Plural ID "@raw" found with context "@context"', ['@raw' => $string, '@context' => $context]);
     }
-    $this->assert(strpos($this->potx_output, 'msgctxt "'. _potx_format_quoted_string('"'. $context . '"') . "\"\nmsgid \"". _potx_format_quoted_string('"'. $string . '"') ."\"\nmsgid_plural \"". _potx_format_quoted_string('"'. $plural . '"') .'"') !== FALSE, $message, $group);
+    $this->assert(strpos($this->potx_output, 'msgctxt "' . _potx_format_quoted_string('"' . $context . '"') . "\"\nmsgid \"" . _potx_format_quoted_string('"' . $string . '"') . "\"\nmsgid_plural \"" . _potx_format_quoted_string('"' . $plural . '"') . '"') !== FALSE, $message, $group);
   }
 
   /**
-   * Helper function to assert lack of msgid_plural with context in the .po file.
+   * Assert the lack of msgid_plural with context in the .po file.
    */
-  private function assertNoPluralIDContext($string, $plural, $context, $message = '', $group = 'Other') {
+  private function assertNoPluralIdContext($string, $plural, $context, $message = '', $group = 'Other') {
     if (!$message) {
-      $message = format_string('No plural ID "@raw" found with context "@context"', array('@raw' => $string, '@context' => $context));
+      $message = format_string('No plural ID "@raw" found with context "@context"', ['@raw' => $string, '@context' => $context]);
     }
-    $this->assert(strpos($this->potx_output, 'msgctxt "'. _potx_format_quoted_string('"'. $context . '"') . "\"\nmsgid \"". _potx_format_quoted_string('"'. $string . '"') ."\"\nmsgid_plural \"". _potx_format_quoted_string('"'. $plural . '"') .'"') === FALSE, $message, $group);
+    $this->assert(strpos($this->potx_output, 'msgctxt "' . _potx_format_quoted_string('"' . $context . '"') . "\"\nmsgid \"" . _potx_format_quoted_string('"' . $string . '"') . "\"\nmsgid_plural \"" . _potx_format_quoted_string('"' . $plural . '"') . '"') === FALSE, $message, $group);
   }
 
   /**
@@ -708,7 +729,7 @@ class TestConstraint {
     }
     $output_path = "$file_dir/$basename." . $this->randomName(10) . '.html';
     $rv = file_put_contents($output_path, $this->drupalGetContent());
-    $this->pass("$description: " . l('Contents of result page', $output_path));
+    $this->pass("$description: " . l(t('Contents of result page'), $output_path));
   }
 
 }

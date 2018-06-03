@@ -19,20 +19,20 @@ function potx_local_init($module_path = NULL) {
   global $_potx_schema_lookup;
   global $_potx_reverse_lookup_built;
 
-  $_potx_found_modules = array();
-  $_potx_schema_lookup = array();
+  $_potx_found_modules = [];
+  $_potx_schema_lookup = [];
   $_potx_reverse_lookup_built = FALSE;
 
-  global $potx_callbacks;
+  global $_potx_callbacks;
 
-  $potx_callbacks = array(
+  $_potx_callbacks = [
     'schema_store_lookup' => '_potx_schema_store_lookup',
     'schema_reverse_lookup' => '_potx_schema_reverse_lookup',
     'load_module_metadata' => '_potx_load_module_metadata',
     'store_module_metadata' => '_potx_store_module_metadata',
     'schema_store' => '_potx_schema_store',
     'schema_load' => '_potx_schema_load',
-  );
+  ];
 
   if ($module_path !== NULL) {
     _potx_find_all_modules($module_path);
@@ -55,11 +55,11 @@ function _potx_find_all_modules($module_path) {
 
   // The list of directories to check in the path, to find out if we are in a
   // Drupal install directory.
-  $checks = array('/sites/', '/core/', '/profiles/', '/modules/', '/themes/');
+  $checks = ['/sites/', '/core/', '/profiles/', '/modules/', '/themes/'];
 
   // The list of paths that could contain "modules/" or "themes/"
   // subdirectories.
-  $search_paths = array();
+  $search_paths = [];
 
   foreach ($checks as $check) {
     if (preg_match("!$check!", $module_path)) {
@@ -90,7 +90,7 @@ function _potx_find_all_modules($module_path) {
   }
 
   foreach ($search_paths as $search_path) {
-    foreach (array('/modules', '/themes') as $sub) {
+    foreach (['/modules', '/themes'] as $sub) {
       if (is_dir($search_path . $sub)) {
         _potx_find_modules($search_path . $sub);
       }
@@ -126,8 +126,7 @@ function _potx_find_modules($path) {
 }
 
 /**
- * Store a config schema file's matching keys (e.g. field.field.*.*.*), and
- *  the module that contains the schema, in a lookup table.
+ * Store config schema file's matching keys and their module in a lookup table.
  *
  * @param array $keys
  *   List of config matching keys in a config schema file.
@@ -140,8 +139,7 @@ function _potx_schema_store_lookup(array $keys, $module_name) {
 }
 
 /**
- * Find the module containing the schema for a specific config file, based on
- *  its matching candidates, using a reverse lookup table.
+ * Find the module containing the schema for a specific config file.
  *
  * @param array $matching_candidates
  *   The list of matching candidates for a config file, ordered from specific to
@@ -170,9 +168,10 @@ function _potx_schema_reverse_lookup(array $matching_candidates) {
 }
 
 /**
- * Build the reverse lookup table from config schemas' matching keys, and their
- *  containing modules, for all modules found locally.
+ * Build a lookup table for config schema's matching keys and their modules.
  *
+ * Builds the reverse lookup table from config schemas' matching keys, and
+ * their containing modules, for all modules found locally.
  * This is only used on a local potx. Building the reverse lookup table is
  * expensive, so it is delayed as much as possible, i.e. until an optional
  * config is parsed, and the reverse lookup is called.
@@ -183,7 +182,7 @@ function _potx_schema_reverse_lookup(array $matching_candidates) {
 function _potx_build_reverse_lookup() {
   global $_potx_reverse_lookup_built;
   global $_potx_found_modules;
-  global $potx_callbacks;
+  global $_potx_callbacks;
 
   foreach ($_potx_found_modules as $module_name => $module_data) {
     $module_files = _potx_explore_dir($module_data['path'] . '/', '*', POTX_API_8);
@@ -198,7 +197,7 @@ function _potx_build_reverse_lookup() {
           $yaml = Yaml::parse($code);
           if (is_array($yaml)) {
             $keys = array_keys($yaml);
-            $potx_callbacks['schema_store_lookup']($keys, $module_name);
+            $_potx_callbacks['schema_store_lookup']($keys, $module_name);
           }
         }
         catch (ParseException $e) {
@@ -215,8 +214,10 @@ function _potx_build_reverse_lookup() {
 }
 
 /**
- * Load a module's metadata, including its dependencies and list of config
- *  schema files.
+ * Load a module's metadata.
+ *
+ * The module's metadata includes its dependencies and list of config schema
+ * files.
  *
  * @param string $module_name
  *   The module's name.
@@ -235,7 +236,7 @@ function _potx_load_module_metadata($module_name) {
   $module_path = $_potx_found_modules[$module_name]['path'];
 
   if ($module_name === 'core') {
-    $_potx_module_metadata['core']['dependencies'] = array();
+    $_potx_module_metadata['core']['dependencies'] = [];
   }
   else {
     $info_path = $module_path . '/' . $module_name . '.info.yml';
@@ -244,7 +245,7 @@ function _potx_load_module_metadata($module_name) {
 
     try {
       $info_yaml = Yaml::parse($code);
-      $_potx_module_metadata[$module_name]['dependencies'] = isset($info_yaml['dependencies']) ? $info_yaml['dependencies'] : array();
+      $_potx_module_metadata[$module_name]['dependencies'] = isset($info_yaml['dependencies']) ? $info_yaml['dependencies'] : [];
     }
     catch (ParseException $e) {
       \Drupal::logger('potx')->error("YAML parseing error on file @path: @error", [
@@ -259,7 +260,7 @@ function _potx_load_module_metadata($module_name) {
 
   foreach ($module_files as $file_path) {
     if (preg_match('~config/schema/[^/]+\.yml$~', $file_path)) {
-      $_potx_module_metadata[$module_name]['config']['schema'][] = array(NULL, $file_path);
+      $_potx_module_metadata[$module_name]['config']['schema'][] = [NULL, $file_path];
     }
   }
 
@@ -281,8 +282,10 @@ function _potx_store_module_metadata($module_name, array $metadata) {
 }
 
 /**
- * Store a module's processed schema, in a cache (for local potx), or database
- *  (for l10n_server).
+ * Store a module's processed schema.
+ *
+ * The processed schema could be stored in a cache (for local potx), or
+ * database (for l10n_server).
  *
  * The processed schema is found in the "$_potx_module_schema" global.
  *
@@ -297,8 +300,10 @@ function _potx_schema_store($module_name) {
 }
 
 /**
- * Load a module's processed schema, from cache (for local potx), or database
- *  (for l10n_server).
+ * Load a module's processed schema.
+ *
+ * The processed metadata could be loaded from cache (for local potx), or
+ * database (for l10n_server).
  *
  * @param string $module_name
  *   The module's name.

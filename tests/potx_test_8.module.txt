@@ -1,8 +1,8 @@
 <?php
-
+// @codingStandardsIgnoreFile
 /**
  * @file
- *   File used purely to test the parser in potx. This is file has a .txt
+ * File used purely to test the parser in potx. This file has a .txt
  *   extension so that it does not fail linting tests run by continuous
  *   integration.
  */
@@ -71,14 +71,21 @@ function potx_test_8_empty() {
  * Test parsing Drupal 8 $this->t and formatPlural function calls.
  */
 class PotxTestD8 {
-  function test_func() {
+
+  /**
+   *
+   */
+  public function test_func() {
     // In the real world, we'd also need to define "function t", and inject
     // the translation service. please refer to https://drupal.org/node/2079611
     // for an example.
     $test_translation = $this->t('Using t inside D8 classes ($this->t)');
   }
 
-  function testFormatPlural() {
+  /**
+   *
+   */
+  public function testFormatPlural() {
     $this->formatPlural($count, '1 formatPlural test string', '@count formatPlural test strings');
     $this->formatPlural($count, '1 formatPlural test string in context', '@count formatPlural test strings in context', array(), array('context' => 'Test context'));
     $this->formatPlural($count);
@@ -90,6 +97,7 @@ class PotxTestD8 {
     $a = new PluralTranslatableMarkup($count, '1 PluralTranslatableMarkup test string', '@count PluralTranslatableMarkup test strings');
     $b = new PluralTranslatableMarkup($count, '1 PluralTranslatableMarkup test string with context', '@count PluralTranslatableMarkup test strings with context', array(), array('context' => 'Test context'));
   }
+
 }
 
 /**
@@ -98,7 +106,7 @@ class PotxTestD8 {
 function potx_test_inline_templates() {
   $render_array = array(
     '#type' => 'inline_template',
-    '#template' => "Here is a {% trans 'Test translatable string inside an inline template' %}."
+    '#template' => "Here is a {% trans 'Test translatable string inside an inline template' %}.",
   );
 
   $render_array['#template'] = 'Here is {% trans %}Another test translatable string inside an inline template{% endtrans %}';

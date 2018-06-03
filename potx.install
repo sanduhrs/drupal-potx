@@ -2,11 +2,11 @@
 
 /**
  * @file
- *   Install requirements checking for the module.
+ * Install requirements checking for the module.
  */
 
 /**
- * Implementation of hook_requirements().
+ * Implements hook_requirements().
  *
  * The translation template extractor requires the PHP token extension to
  * be enabled. We should not let Drupal to install the module if this is
@@ -21,7 +21,7 @@ function potx_requirements($phase) {
     $ok = function_exists('token_get_all');
     $requirements['potx_tokenizer'] = [
       'title' => t('PHP tokenizer for Translation template extractor'),
-      'value' => $ok  ? t('Available') : t('Not available'),
+      'value' => $ok ? t('Available') : t('Not available'),
       'description' => t(
         'The <a href="@tokenizer">PHP tokenizer functions</a> are required.',
         [
