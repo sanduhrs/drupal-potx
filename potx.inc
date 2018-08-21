@@ -1399,20 +1399,22 @@ function _potx_skip_args($here) {
   // Go through to either the end of the function call, or to a comma after the
   // current position on the same nesting level, or an unexpected semicolon.
   while (!(($_potx_tokens[$here] == ',' && $nesting == 0) ||
-           ($_potx_tokens[$here] == ')' && $nesting == -1) ||
-           $_potx_tokens[$here] === ';')) {
-    $here++;
+           ($_potx_tokens[$here] == ')' && $nesting == -1))) {
     if (!is_array($_potx_tokens[$here])) {
-      if ($_potx_tokens[$here] == ')') {
+      if ($_potx_tokens[$here] == ')' || $_potx_tokens[$here] == ']') {
         $nesting--;
       }
-      if ($_potx_tokens[$here] == '(') {
+      if ($_potx_tokens[$here] == '(' || $_potx_tokens[$here] == '[') {
         $nesting++;
       }
     }
-  }
-  if ($_potx_tokens[$here] === ';') {
-    potx_status('error', t('Unexpected ;'));
+
+    if ($_potx_tokens[$here] === ';') {
+      potx_status('error', t('Unexpected ;'));
+      break;
+    }
+
+    $here++;
   }
   // If we run out of nesting, it means we reached the end of the function call,
   // so we skipped the arguments but did not find meat for looking at the

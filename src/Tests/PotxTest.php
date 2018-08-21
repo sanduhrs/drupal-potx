@@ -305,9 +305,10 @@ class PotxMockLanguageManager {
     $this->assertMsgId('Translation in good context');
     $this->assertMsgIdContext('Translation in good context', 'Translation test');
 
-    $this->assert(count($this->potx_status) == 2, '2 error messages found');
-    $this->assert($this->potx_status[0][0] == t('In @Translation, only one, non-empty static string is allowed in double quotes.'), 'Incorrect @Translation found.');
-    $this->assert($this->potx_status[1][0] == $this->empty_error, 'Second empty error found.');
+    $this->assert(count($this->potx_status) == 3, '3 error messages found');
+    $this->assert(!empty($this->potx_status[0][0]) && $this->potx_status[0][0] == t('Unexpected ;'), 'Unexpected semicolon found.');
+    $this->assert(!empty($this->potx_status[1][0]) && $this->potx_status[1][0] == t('In @Translation, only one, non-empty static string is allowed in double quotes.'), 'Incorrect @Translation found.');
+    $this->assert(!empty($this->potx_status[2][0]) && $this->potx_status[2][0] == $this->empty_error, 'Second empty error found.');
 
     $this->assertPluralId('1 formatPlural test string', '@count formatPlural test strings');
     $this->assertPluralIdContext('1 formatPlural test string in context', '@count formatPlural test strings in context', 'Test context');
@@ -317,6 +318,12 @@ class PotxMockLanguageManager {
 
     $this->assertPluralId('1 PluralTranslatableMarkup test string', '@count PluralTranslatableMarkup test strings');
     $this->assertPluralIdContext('1 PluralTranslatableMarkup test string with context', '@count PluralTranslatableMarkup test strings with context', 'Test context');
+
+    $this->assertPluralIdContext(
+      '1 PluralTranslatableMarkup test string in context with two @place @holders, short array syntax',
+      '@count PluralTranslatableMarkup test strings in context with two @place @holders, short array sytanx',
+      'Test context'
+    );
 
     $this->assertMsgId('TranslationWrapper string');
     $this->assertMsgIdContext('TranslationWrapper string with context', 'With context');
@@ -328,6 +335,12 @@ class PotxMockLanguageManager {
     $this->assertMsgIdContext('TranslatableMarkup string with long array followed by short array context', 'With context');
     $this->assertMsgIdContext('TranslatableMarkup string with complicated tokens', 'With context');
     $this->assertMsgIdContext('TranslatableMarkup string with complicated option tokens', 'With context');
+    $this->assertMsgIdContext('TranslatableMarkup string with a @placeholder and context', 'Test context');
+    $this->assertMsgIdContext('TranslatableMarkup string with a @placeholder and trailing comma and context', 'Test context');
+    $this->assertMsgIdContext('TranslatableMarkup string with two @place @holders and context', 'Test context');
+    $this->assertMsgIdContext('TranslatableMarkup string with a @placeholder and short array syntax context', 'Test context');
+    $this->assertMsgIdContext('TranslatableMarkup string with a @placeholder and trailing comma and short array syntax context', 'Test context');
+    $this->assertMsgIdContext('TranslatableMarkup string with two @place @holders and short array syntax context', 'Test context');
 
     $this->assertMsgId('Test translatable string inside an inline template');
     $this->assertMsgId('Another test translatable string inside an inline template');
