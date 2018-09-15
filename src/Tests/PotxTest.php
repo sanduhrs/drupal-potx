@@ -78,7 +78,7 @@ class PotxTest extends WebTestBase {
       'Third empty error' => $this->empty_error,
       'Fourth error' => t('In @function(), the singular and plural strings should be literal strings. There should be no variables, concatenation, constants or even a t() call there.', [
         '@function' => 'format_plural',
-      ])
+      ]),
     ]);
   }
 
@@ -131,7 +131,7 @@ class PotxTest extends WebTestBase {
     $this->assertPotxErrors([
       'First empty error' => $this->empty_error,
       'Second empty error' => $this->empty_error,
-      'Third empty error' => $this->empty_error
+      'Third empty error' => $this->empty_error,
     ]);
   }
 
@@ -188,7 +188,7 @@ class PotxTest extends WebTestBase {
 
     $this->assertPotxErrors([
       'First empty error' => $this->empty_error,
-      'Second empty error' => $this->empty_error
+      'Second empty error' => $this->empty_error,
     ]);
   }
 
@@ -286,7 +286,7 @@ class PotxMockLanguageManager {
     $this->assertMsgId('Test string with %multiple_filters');
 
     $this->assertPotxErrors([
-      'Concatenation error' => t('Uses of the t filter in Twig templates should start with a single literal string, and should not be chained.')
+      'Concatenation error' => t('Uses of the t filter in Twig templates should start with a single literal string, and should not be chained.'),
     ]);
   }
 
@@ -362,7 +362,7 @@ class PotxMockLanguageManager {
 
     $this->assertPotxErrors([
       'Incorrect @Translation' => t('In @Translation, only one, non-empty static string is allowed in double quotes.'),
-      'First empty error' => $this->empty_error
+      'First empty error' => $this->empty_error,
     ]);
   }
 
@@ -567,8 +567,8 @@ class PotxMockLanguageManager {
     $this->assertPotxErrors([
       'Broken twig error' => t("Twig parsing error on file @path: @error", [
         '@path' => $broken_twig_path,
-        '@error' => 'Unexpected character "&" in "' . $broken_twig_path . '" at line 1.'
-      ])
+        '@error' => 'Unexpected character "&" in "' . $broken_twig_path . '" at line 1.',
+      ]),
     ]);
   }
 
