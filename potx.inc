@@ -397,11 +397,13 @@ function potx_finish_processing($save_callback = '_potx_save_string', $api_versi
   global $_potx_callbacks;
 
   if ($api_version > POTX_API_7) {
-    foreach ($_potx_module_metadata as $module_name => $module_metadata) {
-      $_potx_callbacks['store_module_metadata']($module_name, $module_metadata);
+    if (isset($_potx_module_metadata)) {
+      foreach ($_potx_module_metadata as $module_name => $module_metadata) {
+        $_potx_callbacks['store_module_metadata']($module_name, $module_metadata);
+      }
+      // Parsing shipped configuration has to happen after processing all schemas.
+      _potx_parse_shipped_configuration($save_callback, $api_version);
     }
-    // Parsing shipped configuration has to happen after processing all schemas.
-    _potx_parse_shipped_configuration($save_callback, $api_version);
     // Clear yaml translation patterns, so translation patterns for a module
     // won't be used for extracting translatable strings for another module.
     $_potx_yaml_translation_patterns = NULL;
@@ -1396,10 +1398,8 @@ function _potx_skip_args($here) {
   global $_potx_tokens;
 
   $nesting = 0;
-  // Go through to either the end of the function call, or to a comma after the
-  // current position on the same nesting level, or an unexpected semicolon.
-  while (!(($_potx_tokens[$here] == ',' && $nesting == 0) ||
-           ($_potx_tokens[$here] == ')' && $nesting == -1))) {
+  // Continue until we reach a semicolon or the end of the function call.
+  while($_potx_tokens[$here] !== ';' && $nesting >= -1) {
     if (!is_array($_potx_tokens[$here])) {
       if ($_potx_tokens[$here] == ')' || $_potx_tokens[$here] == ']') {
         $nesting--;
@@ -1409,13 +1409,22 @@ function _potx_skip_args($here) {
       }
     }
 
-    if ($_potx_tokens[$here] === ';') {
-      potx_status('error', t('Unexpected ;'));
-      break;
+    // If we reach a comma on the same nesting level, or the end of the function
+    // call, we have skipped past the function arguments.
+    if (($_potx_tokens[$here] == ',' && $nesting == 0) ||
+        ($_potx_tokens[$here] == ')' && $nesting == -1)) {
+        break;
     }
 
     $here++;
   }
+
+  // Generate an error if we encounter a semicolon before the end of the
+  // function call.
+  if ($_potx_tokens[$here] === ';' && $nesting !== -1) {
+    potx_status('error', t('Unexpected ;'));
+  }
+
   // If we run out of nesting, it means we reached the end of the function call,
   // so we skipped the arguments but did not find meat for looking at the
   // specified context.

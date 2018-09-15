@@ -32,7 +32,7 @@ function potx_test_8_example() {
   $g = new TranslatableMarkup('TranslatableMarkup string with complicated option tokens', [], ['foo' => potx_test_8_sample([4]), 'bar' => [12, 14, []], 'context' => 'With context', 'eek' => 'ook']);
 
   // Test with @placeholders and short array context
-
+  $z = new TranslatableMarkup('TranslatableMarkup string with a @placeholder', array(@placeholder => 'foo'));
   $h = new TranslatableMarkup('TranslatableMarkup string with a @placeholder and context',
     array('@placeholder' => $foo),
     array('context' => 'Test context')
