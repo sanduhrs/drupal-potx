@@ -2106,7 +2106,21 @@ function _potx_parse_yaml_file($code, $file_name, $file_path, $save_callback) {
   }
   elseif (preg_match('~[^/]+\.info\.yml~', $file_name)) {
     $module_name = basename(dirname($file_name));
-    $_potx_module_metadata[$module_name]['dependencies'] = isset($yaml['dependencies']) ? $yaml['dependencies'] : array();
+    $_potx_module_metadata[$module_name]['dependencies'] = [];
+
+    // Module and theme projects have dependencies. Profiles have modules
+    // listed in the install key.
+    if (isset($yaml['dependencies'])) {
+      $_potx_module_metadata[$module_name]['dependencies'] = $yaml['dependencies'];
+    }
+    if (isset($yaml['install'])) {
+      $_potx_module_metadata[$module_name]['dependencies'] = $yaml['install'];
+    }
+
+    // Remove composer style naming prefix for dependencies.
+    foreach ($_potx_module_metadata[$module_name]['dependencies'] as &$dependency) {
+      $dependency = preg_replace('!^.+:(\S+)!', '\1', $dependency);
+    }
   }
 }
 
