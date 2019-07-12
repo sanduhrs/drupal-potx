@@ -1948,6 +1948,15 @@ function _potx_parse_js_string($string) {
  * Parse a Twig template for translatables. Drupal 8+.
  */
 function _potx_parse_twig_file($code, $file, $save_callback) {
+  // Extract meta tags, and save text in certain ones.
+  $tags = get_meta_tags($file);
+  $tags_to_save = ['help_topic:label'];
+  foreach ($tags as $key => $content) {
+    if (in_array($key, $tags_to_save)) {
+      $save_callback(_potx_format_quoted_string('"' . trim($content) . '"'), POTX_CONTEXT_NONE, $file, 1);
+    }
+  }
+
   $twig_lexer = new Twig_Lexer(new Twig_Environment());
 
   try {

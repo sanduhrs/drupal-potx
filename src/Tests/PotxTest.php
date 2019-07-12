@@ -285,6 +285,9 @@ class PotxMockLanguageManager {
     $this->assertMsgId('Test string with @multiple_filters');
     $this->assertMsgId('Test string with %multiple_filters');
 
+    $this->assertMsgID('Meta-data for a help topic title');
+    $this->assertNoMsgID('Meta-data that should not be translated');
+
     $this->assertPotxErrors([
       'Concatenation error' => t('Uses of the t filter in Twig templates should start with a single literal string, and should not be chained.'),
     ]);
