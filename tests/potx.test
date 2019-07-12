@@ -235,6 +235,9 @@ class PotxTestCase extends DrupalWebTestCase {
     $this->assertMsgID('Test string with @extra_filter');
     $this->assertMsgID('Test string with @multiple_filters');
     $this->assertMsgID('Test string with %multiple_filters');
+
+    $this->assertMsgID('Meta-data for a help topic title');
+    $this->assertNoMsgID('Meta-data that should not be translated');
   }
 
   /**
