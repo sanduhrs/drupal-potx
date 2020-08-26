@@ -1948,12 +1948,35 @@ function _potx_parse_js_string($string) {
  * Parse a Twig template for translatables. Drupal 8+.
  */
 function _potx_parse_twig_file($code, $file, $save_callback) {
-  // Extract meta tags, and save text in certain ones.
-  $tags = get_meta_tags($file);
-  $tags_to_save = ['help_topic:label'];
-  foreach ($tags as $key => $content) {
-    if (in_array($key, $tags_to_save)) {
-      $save_callback(_potx_format_quoted_string('"' . trim($content) . '"'), POTX_CONTEXT_NONE, $file, 1);
+  // Extract front-matter data, and save text in certain ones.
+  $keys_to_save = ['label'];
+  // Implementation copied from core's \Drupal\help_topics\FrontMatter class.
+  $fm_separator = '---';
+  $fm_regexp = '/\A(' . $fm_separator . '(.*?)?\R' . $fm_separator . ')(\R.*)?\Z/s';
+  // Check for front matter data.
+  $len = strlen($fm_separator);
+  $matches = [];
+  if (substr($code, 0, $len + 1) === $fm_separator . "\n" || substr($code, 0, $len + 2) === $fm_separator . "\r\n") {
+    preg_match($fm_regexp, $code, $matches);
+    $matches = array_map('trim', $matches);
+  }
+  if (!empty($matches[1])) {
+    // Set the extracted source code.
+    $code = $matches[3];
+    try {
+      $metadata = Yaml::parse($matches[2]);
+      foreach ($metadata as $key => $content) {
+        if (in_array($key, $keys_to_save, TRUE)) {
+          $save_callback(_potx_format_quoted_string('"' . trim($content) . '"'), POTX_CONTEXT_NONE, $file, 1);
+          break;
+        }
+      }
+    }
+    catch (ParseException $e) {
+      potx_status('error', t("YAML parsing error on file @path: @error", [
+        '@path' => $file,
+        '@error' => $e->getMessage(),
+      ]), $file);
     }
   }
 
