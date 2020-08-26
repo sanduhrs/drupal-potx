@@ -1,30 +1,36 @@
 <?php
 
-namespace Drupal\potx\Tests;
+namespace Drupal\Tests\potx\Kernel;
 
-use Drupal\simpletest\WebTestBase;
+use Drupal\Component\Render\FormattableMarkup;
+use Drupal\KernelTests\KernelTestBase;
 
 /**
  * Ensure that the translation template extractor functions properly.
  *
  * @group potx
+ * @preserveGlobalState disabled
  */
-class PotxTest extends WebTestBase {
+class PotxTest extends KernelTestBase {
 
-  public static $modules = ['locale', 'potx'];
+  /**
+   * {@inheritdoc}
+   */
+  protected static $modules = ['locale', 'potx'];
 
   /**
    * {@inheritdoc}
    */
   public function setUp() {
+    parent::setUp();
 
     // Add potx.inc which we test for its functionality.
-    include_once __DIR__ . '/../../potx.inc';
-    include_once __DIR__ . '/../../potx.local.inc';
+    include_once __DIR__ . '/../../../potx.inc';
+    include_once __DIR__ . '/../../../potx.local.inc';
     potx_local_init();
     // Store empty error message for reuse in multiple cases.
     $this->empty_error = t('Empty string attempted to be localized. Please do not leave test code for localization in your source.');
-    $this->tests_root = __DIR__ . '/../../tests';
+    $this->tests_root = __DIR__ . '/../../../tests';
   }
 
   /**
@@ -494,7 +500,7 @@ class PotxMockLanguageManager {
    * Test parsing of Drupal 8 shipped configuration files.
    */
   public function testDrupal8ShippedConfiguration() {
-
+    potx_status('set', POTX_STATUS_STRUCTURED);
     global $_potx_store, $_potx_strings, $_potx_install;
     $_potx_store = $_potx_strings = $_potx_install = [];
     $test_d8_path = $this->tests_root . '/drupal8';
@@ -566,7 +572,7 @@ class PotxMockLanguageManager {
 
     $this->assertMsgId('Test boolean based variable');
 
-    $broken_twig_path = __DIR__ . '/../../tests/drupal8/broken_twig.html.twig';
+    $broken_twig_path = __DIR__ . '/../../../tests/drupal8/broken_twig.html.twig';
     $this->assertPotxErrors([
       'Broken twig error' => t("Twig parsing error on file @path: @error", [
         '@path' => $broken_twig_path,
@@ -701,7 +707,7 @@ class TestConstraint {
    */
   private function assertMsgId($string, $message = '', $group = 'Other') {
     if (!$message) {
-      $message = format_string('MsgID "@raw" found', ['@raw' => $string]);
+      $message = new FormattableMarkup('MsgID "@raw" found', ['@raw' => $string]);
     }
     $this->assert(strpos($this->potx_output, 'msgid "' . _potx_format_quoted_string('"' . $string . '"') . '"') !== FALSE, $message, $group);
   }
@@ -711,7 +717,7 @@ class TestConstraint {
    */
   private function assertNoMsgId($string, $message = '', $group = 'Other') {
     if (!$message) {
-      $message = format_string('MsgID "@raw" not found', ['@raw' => $string]);
+      $message = new FormattableMarkup('MsgID "@raw" not found', ['@raw' => $string]);
     }
     $this->assert(strpos($this->potx_output, 'msgid "' . _potx_format_quoted_string('"' . $string . '"') . '"') === FALSE, $message, $group);
   }
@@ -721,7 +727,7 @@ class TestConstraint {
    */
   private function assertMsgIdContext($string, $context, $message = '', $group = 'Other') {
     if (!$message) {
-      $message = format_string('MsgID "@raw" in context "@context" found', ['@raw' => $string, '@context' => $context]);
+      $message = new FormattableMarkup('MsgID "@raw" in context "@context" found', ['@raw' => $string, '@context' => $context]);
     }
     $this->assert(strpos($this->potx_output, 'msgctxt "' . _potx_format_quoted_string('"' . $context . '"') . "\"\nmsgid \"" . _potx_format_quoted_string('"' . $string . '"') . '"') !== FALSE, $message, $group);
   }
@@ -731,7 +737,7 @@ class TestConstraint {
    */
   private function assertNoMsgIdContext($string, $context, $message = '', $group = 'Other') {
     if (!$message) {
-      $message = format_string('No MsgID "@raw" in context "@context" found', ['@raw' => $string, '@context' => $context]);
+      $message = new FormattableMarkup('No MsgID "@raw" in context "@context" found', ['@raw' => $string, '@context' => $context]);
     }
     $this->assert(strpos($this->potx_output, 'msgid "' . _potx_format_quoted_string('"' . $string . '"') . '"' . "\nmsgctxt \"" . _potx_format_quoted_string('"' . $context . '"') . '"') === FALSE, $message, $group);
   }
@@ -741,7 +747,7 @@ class TestConstraint {
    */
   private function assertPluralId($string, $plural, $message = '', $group = 'Other') {
     if (!$message) {
-      $message = format_string('Plural ID "@raw" found', ['@raw' => $string]);
+      $message = new FormattableMarkup('Plural ID "@raw" found', ['@raw' => $string]);
     }
     $this->assert(strpos($this->potx_output, 'msgid "' . _potx_format_quoted_string('"' . $string . '"') . "\"\nmsgid_plural \"" . _potx_format_quoted_string('"' . $plural . '"') . '"') !== FALSE, $message, $group);
   }
@@ -751,7 +757,7 @@ class TestConstraint {
    */
   private function assertPluralIdContext($string, $plural, $context, $message = '', $group = 'Other') {
     if (!$message) {
-      $message = format_string('Plural ID "@raw" found with context "@context"', ['@raw' => $string, '@context' => $context]);
+      $message = new FormattableMarkup('Plural ID "@raw" found with context "@context"', ['@raw' => $string, '@context' => $context]);
     }
     $this->assert(strpos($this->potx_output, 'msgctxt "' . _potx_format_quoted_string('"' . $context . '"') . "\"\nmsgid \"" . _potx_format_quoted_string('"' . $string . '"') . "\"\nmsgid_plural \"" . _potx_format_quoted_string('"' . $plural . '"') . '"') !== FALSE, $message, $group);
   }
@@ -761,7 +767,7 @@ class TestConstraint {
    */
   private function assertNoPluralIdContext($string, $plural, $context, $message = '', $group = 'Other') {
     if (!$message) {
-      $message = format_string('No plural ID "@raw" found with context "@context"', ['@raw' => $string, '@context' => $context]);
+      $message = new FormattableMarkup('No plural ID "@raw" found with context "@context"', ['@raw' => $string, '@context' => $context]);
     }
     $this->assert(strpos($this->potx_output, 'msgctxt "' . _potx_format_quoted_string('"' . $context . '"') . "\"\nmsgid \"" . _potx_format_quoted_string('"' . $string . '"') . "\"\nmsgid_plural \"" . _potx_format_quoted_string('"' . $plural . '"') . '"') === FALSE, $message, $group);
   }
