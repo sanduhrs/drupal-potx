@@ -6,4 +6,4 @@ files[] = potx.local.inc
 files[] = tests/potx.test
 core = 7.x
 package = Multilingual
-php = 5.1.2
+php = 5.3
