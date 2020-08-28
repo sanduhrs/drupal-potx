@@ -81,7 +81,7 @@ function potx_drush_extract($mode = NULL) {
     $api_option = POTX_API_CURRENT;
   }
   $language_option = drush_get_option('language');
-  if (!empty($language_option) && !in_array($language_option, array_keys(language_list()))) {
+  if (!empty($language_option) && !in_array($language_option, array_keys(\Drupal::languageManager()->getLanguages()))) {
     $language_option = NULL;
   }
   $translations_option = (boolean) drush_get_option('translations');
