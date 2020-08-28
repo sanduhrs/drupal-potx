@@ -19,6 +19,11 @@
 
 use Symfony\Component\Yaml\Yaml;
 use Symfony\Component\Yaml\Exception\ParseException;
+use Twig\Environment;
+use Twig\Error\SyntaxError;
+use Twig\Lexer;
+use Twig\Loader\FilesystemLoader;
+use Twig\Source;
 
 /**
  * The current Drupal major API version.
@@ -576,9 +581,10 @@ function _potx_translation_export($translation_export_langcode, $string, $plural
   $language_column = $api_version > POTX_API_5 ? 'language' : 'locale';
   $language_table = $api_version > POTX_API_5 ? 'languages' : 'locales_meta';
 
+  $connection = \Drupal::database();
   if (!isset($plural)) {
     // Single string to look translation up for.
-    if ($translation = db_query("SELECT t.translation FROM {locales_source} s LEFT JOIN {locales_target} t ON t.lid = s.lid WHERE s.source = :source AND t.{$language_column} = :langcode", [':source' => $string, ':langcode' => $translation_export_langcode])->fetchField()) {
+    if ($translation = $connection->query("SELECT t.translation FROM {locales_source} s LEFT JOIN {locales_target} t ON t.lid = s.lid WHERE s.source = :source AND t.{$language_column} = :langcode", [':source' => $string, ':langcode' => $translation_export_langcode])->fetchField()) {
       return 'msgstr ' . _locale_export_string($translation);
     }
     return "msgstr \"\"\n";
@@ -592,7 +598,7 @@ function _potx_translation_export($translation_export_langcode, $string, $plural
       $number_of_plurals = \Drupal::service('locale.plural.formula')->getNumberOfPlurals($translation_export_langcode);
     }
     else {
-      $number_of_plurals = db_query('SELECT plurals FROM {' . $language_table . "} WHERE {$language_column} = :langcode", [':langcode' => $translation_export_langcode])->fetchField();
+      $number_of_plurals = $connection->query('SELECT plurals FROM {' . $language_table . "} WHERE {$language_column} = :langcode", [':langcode' => $translation_export_langcode])->fetchField();
     }
     $plural_index = 0;
     while ($plural_index < $number_of_plurals) {
@@ -616,7 +622,7 @@ function _potx_translation_export($translation_export_langcode, $string, $plural
     if (count($strings)) {
       // Source string array was done, so export translations.
       foreach ($strings as $index => $string) {
-        if ($translation = db_query("SELECT t.translation FROM {locales_source} s LEFT JOIN {locales_target} t ON t.lid = s.lid WHERE s.source = :source AND t.{$language_column} = :langcode", [':source' => $string, ':langcode' => $translation_export_langcode])->fetchField()) {
+        if ($translation = $connection->query("SELECT t.translation FROM {locales_source} s LEFT JOIN {locales_target} t ON t.lid = s.lid WHERE s.source = :source AND t.{$language_column} = :langcode", [':source' => $string, ':langcode' => $translation_export_langcode])->fetchField()) {
           $output .= 'msgstr[' . $index . '] ' . _locale_export_string(_locale_export_remove_plural($translation));
         }
         else {
@@ -721,7 +727,7 @@ function _potx_get_header($file, $template_export_langcode = NULL, $api_version 
       ];
     }
     else {
-      $language = db_query($api_version > POTX_API_5 ? "SELECT language, name, plurals, formula FROM {languages} WHERE language = :langcode" : "SELECT locale, name, plurals, formula FROM {locales_meta} WHERE locale = :langcode", [':langcode' => $template_export_langcode])->fetchObject();
+      $language = \Drupal::database()->query($api_version > POTX_API_5 ? "SELECT language, name, plurals, formula FROM {languages} WHERE language = :langcode" : "SELECT locale, name, plurals, formula FROM {locales_meta} WHERE locale = :langcode", [':langcode' => $template_export_langcode])->fetchObject();
     }
   }
 
@@ -941,7 +947,11 @@ function potx_status($op, $value = NULL, $file = NULL, $line = NULL, $excerpt = 
       // Error message or progress text to display.
       switch ($mode) {
         case POTX_STATUS_MESSAGE:
-          drupal_set_message(implode(' ', [$value, $location_info, $read_more]), $op);
+          \Drupal::messenger()->addMessage(t('@value @location_info @read_more', [
+            '@value' => $value,
+            '@location_info' => $location_info,
+            '@read_more' => $read_more,
+          ]), $op);
           break;
 
         case POTX_STATUS_CLI:
@@ -1979,13 +1989,19 @@ function _potx_parse_twig_file($code, $file, $save_callback) {
       ]), $file);
     }
   }
-
-  $twig_lexer = new Twig_Lexer(new Twig_Environment());
-
-  try {
-    $stream = $twig_lexer->tokenize($code, $file);
+  if (Environment::MAJOR_VERSION < 2) {
+    $twig_lexer = new Lexer(new Environment());
   }
-  catch (Twig_Error_Syntax $e) {
+  else {
+    // For D9 and superior the environment needs a loader.
+    $twigLoader = new FilesystemLoader();
+    $twig_lexer = new Lexer(new Environment($twigLoader));
+  }
+  try {
+    $source = new Source($code, $file);
+    $stream = $twig_lexer->tokenize($source);
+  }
+  catch (SyntaxError $e) {
     potx_status('error', t("Twig parsing error on file @path: @error", [
       '@path' => $file,
       '@error' => $e->getMessage(),
