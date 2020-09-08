@@ -29,6 +29,8 @@ class PotxCommands extends DrushCommands {
    * @option files Comma delimited list of files to extract translatable strings from.
    * @option folder Folder to begin translation extraction in. When no other option is set this defaults to current directory.
    * @option api Drupal core version to use for extraction settings.
+   * @option language Language code if the template should have language dependent content (like plural formulas and language name) included.
+   * @option translations Enable translations export.
    * @usage potx single Extract translatable strings from applicable files in current directory and write to single output file.
    * @usage potx multiple --modules=example Extract translatable strings from applicable files of example module and write to module-specific output file.
    * @usage potx --files=sites/all/modules/example/example.module Extract translatable strings from example.module and write to single output file.
@@ -47,6 +49,8 @@ class PotxCommands extends DrushCommands {
     'files' => NULL,
     'folder' => NULL,
     'api' => NULL,
+    'language' => NULL,
+    'translations' => FALSE,
   ]) {
     // Include library.
     include_once __DIR__ . '/../../potx.inc';
@@ -70,6 +74,11 @@ class PotxCommands extends DrushCommands {
     if (empty($api_option) || !in_array($api_option, [5, 6, 7, 8])) {
       $api_option = POTX_API_CURRENT;
     }
+    $language_option = $options['language'];
+    if (!empty($language_option) && !in_array($language_option, array_keys(\Drupal::languageManager()->getLanguages()))) {
+      $language_option = NULL;
+    }
+    $translations_option = (boolean) $options['translations'];
 
     potx_local_init($folder_option);
 
@@ -97,8 +106,10 @@ class PotxCommands extends DrushCommands {
 
     potx_finish_processing('_potx_save_string', $api_option);
 
-    _potx_build_files(POTX_STRING_RUNTIME, $build_mode);
-    _potx_build_files(POTX_STRING_INSTALLER, POTX_BUILD_SINGLE, 'installer');
+    $template_export_langcode = $language_option;
+    $translation_export_langcode = ($translations_option && $language_option) ? $language_option : NULL;
+    _potx_build_files(POTX_STRING_RUNTIME, $build_mode, 'general', '_potx_save_string', '_potx_save_version', '_potx_get_header', $template_export_langcode, $translation_export_langcode, $api_option);
+    _potx_build_files(POTX_STRING_INSTALLER, POTX_BUILD_SINGLE, 'installer', '_potx_save_string', '_potx_save_version', '_potx_get_header', $template_export_langcode, $translation_export_langcode, $api_option);
     _potx_write_files();
 
     $this->output()->writeln("");
